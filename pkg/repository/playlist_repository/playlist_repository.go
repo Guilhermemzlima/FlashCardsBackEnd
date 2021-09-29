@@ -13,13 +13,13 @@ import (
 )
 
 type IPlaylistRepository interface {
-	Persist(playlist *playlist.Playlist) (*playlist.Playlist, error)
-	FindById(userId string, id *primitive.ObjectID, private bool) (playlist *playlist.Playlist, err error)
-	FindByUserIdAndPublic(userId string) (playlist []*playlist.Playlist, err error)
-	FindByUserId(userId string) (playlist []*playlist.Playlist, err error)
+	Persist(playlistToPersist *playlist.Playlist) (*playlist.Playlist, error)
+	FindById(userId string, id *primitive.ObjectID, private bool) (result *playlist.Playlist, err error)
+	FindByUserIdAndPublic(userId string) (result []*playlist.Playlist, err error)
+	FindByUserId(userId string) (result []*playlist.Playlist, err error)
 	Count(userId string) (count int64, err error)
 	Delete(userId string, id *primitive.ObjectID) (result *playlist.Playlist, err error)
-	Update(id primitive.ObjectID, userId string, playlist *playlist.Playlist) (*playlist.Playlist, error)
+	Update(id *primitive.ObjectID, userId string, playlistToSave *playlist.Playlist) (*playlist.Playlist, error)
 }
 
 type PlaylistRepository struct {
@@ -182,7 +182,7 @@ func (a PlaylistRepository) Delete(userId string, id *primitive.ObjectID) (resul
 	return result, err
 }
 
-func (a PlaylistRepository) Update(id primitive.ObjectID, userId string, playlist *playlist.Playlist) (*playlist.Playlist, error) {
+func (a PlaylistRepository) Update(id *primitive.ObjectID, userId string, playlist *playlist.Playlist) (*playlist.Playlist, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -196,6 +196,6 @@ func (a PlaylistRepository) Update(id primitive.ObjectID, userId string, playlis
 	if updateResult != nil && updateResult.MatchedCount == 0 {
 		return nil, nil
 	}
-
+	playlist.Id = id
 	return playlist, nil
 }

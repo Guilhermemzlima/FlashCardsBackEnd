@@ -3,8 +3,11 @@ package playlist_usecase
 import (
 	"FlashCardsBackEnd/internal/config/log"
 	"FlashCardsBackEnd/internal/errors"
+	"FlashCardsBackEnd/pkg/model/deck"
 	"FlashCardsBackEnd/pkg/model/playlist"
 	"FlashCardsBackEnd/pkg/repository/playlist_repository"
+	"FlashCardsBackEnd/pkg/usecase/card_usecase"
+	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator"
@@ -20,16 +23,21 @@ type IPlaylistUseCase interface {
 	FindByUserId(userId string) (result []*playlist.Playlist, count int64, err error)
 	Delete(id, userId string) (result *playlist.Playlist, err error)
 	Update(id, userId string, isPartial bool, playlist *playlist.Playlist) (*playlist.Playlist, error)
+	AddDeckToPlaylist(id, userId string, deckId string) (*playlist.Playlist, error)
 }
 type PlaylistUseCase struct {
-	validator *validator.Validate
-	repo      playlist_repository.IPlaylistRepository
+	validator   *validator.Validate
+	repo        playlist_repository.IPlaylistRepository
+	deckUseCase deck_usecase.DeckUseCase
+	cardUseCase card_usecase.CardUseCase
 }
 
-func NewPlaylistUseCase(playlistRepository playlist_repository.IPlaylistRepository, validator *validator.Validate) PlaylistUseCase {
+func NewPlaylistUseCase(playlistRepository playlist_repository.IPlaylistRepository, cardUseCase card_usecase.CardUseCase, deckRepo deck_usecase.DeckUseCase, validator *validator.Validate) PlaylistUseCase {
 	return PlaylistUseCase{
-		validator: validator,
-		repo:      playlistRepository,
+		validator:   validator,
+		repo:        playlistRepository,
+		deckUseCase: deckRepo,
+		cardUseCase: cardUseCase,
 	}
 }
 
@@ -157,7 +165,52 @@ func (uc PlaylistUseCase) Update(id, userId string, isPartial bool, playlist *pl
 		return nil, &errors.InvalidPayload{Err: err}
 	}
 
-	result, err := uc.repo.Update(objectID, userId, playlist)
+	result, err := uc.repo.Update(&objectID, userId, playlist)
+	if err != nil {
+		log.Logger.Errorw("update error", "error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
+
+	if result == nil {
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, fmt.Sprintf("id %s not found", id))
+	}
+
+	return result, nil
+}
+
+func (uc PlaylistUseCase) AddDeckToPlaylist(id, userId string, deckId string) (*playlist.Playlist, error) {
+	var preview deck.DeckPreview
+	savedDeck, err := uc.deckUseCase.FindById(userId, deckId)
+	if err != nil {
+		log.Logger.Errorw("playlistToSave not found", "error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+
+	if savedDeck != nil {
+		preview = deck.DeckPreview{
+			Id:       savedDeck.Id.Hex(),
+			ImageURL: savedDeck.ImageURL,
+			Name:     savedDeck.Name,
+			UserId:   savedDeck.UserId,
+		}
+	}
+
+	err = uc.validator.Struct(preview)
+	if err != nil {
+		playlistBytes, _ := json.Marshal(preview)
+		log.Logger.Errorf("Error to validate input:\n %v;\n error: %v", string(playlistBytes), err.Error())
+		return nil, &errors.InvalidPayload{Err: err}
+	}
+
+	savedPlaylist, err := uc.FindById(userId, id)
+	if err != nil {
+		log.Logger.Errorw("playlist not found", "error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+
+	savedPlaylist.Decks = append(savedPlaylist.Decks, preview)
+
+	result, err := uc.Update(id, userId, true, savedPlaylist)
 	if err != nil {
 		log.Logger.Errorw("update error", "error", err.Error())
 		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())

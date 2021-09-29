@@ -110,7 +110,7 @@ func (handler *PlaylistHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	customerID := r.Header.Get(headerUserId)
 
 	id := mux.Vars(r)[pathVarID]
-	playlistObj, err := handler.playlistUseCase.Delete(id, customerID)
+	_, err := handler.playlistUseCase.Delete(id, customerID)
 	if err != nil {
 		log.Logger.Errorw("Failed to remove playlist", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
@@ -118,7 +118,7 @@ func (handler *PlaylistHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Logger.Debug("Playlist has removed successfully")
-	render.Response(w, playlistObj, http.StatusOK)
+	render.Response(w, nil, http.StatusNoContent)
 }
 
 func (handler *PlaylistHandler) extractBody(r *http.Request) (*playlist.Playlist, error) {
@@ -130,6 +130,21 @@ func (handler *PlaylistHandler) extractBody(r *http.Request) (*playlist.Playlist
 	}
 
 	return &playlistJSON, nil
+}
+
+func (handler *PlaylistHandler) PatchDeck(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)[pathVarID]
+	userID := r.Header.Get(headerUserId)
+	deckId := r.Header.Get("deckId")
+	result, err := handler.playlistUseCase.AddDeckToPlaylist(id, userID, deckId)
+	if err != nil {
+		log.Logger.Errorw("Failed to update playlist", "error", err)
+		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
+		return
+	}
+
+	log.Logger.Debug("Playlist has updated successfully")
+	render.Response(w, result, http.StatusCreated)
 }
 
 func GenerateHTTPErrorStatusCode(err error) int {
