@@ -20,6 +20,7 @@ type IReviewUseCase interface {
 	ReviewPlaylists(id, userId string) (map[string]interface{}, error)
 	FindById(userId, id string) (result *review.Review, err error)
 	AddCardResult(sessionId, userId string, card *card.Card, isRight bool) (*review.Review, error)
+	ReviewDecks(id, userId string) (map[string]interface{}, error)
 }
 
 type ReviewUseCase struct {

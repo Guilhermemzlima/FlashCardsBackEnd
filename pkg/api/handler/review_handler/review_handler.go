@@ -39,6 +39,21 @@ func (handler *ReviewHandler) ReviewPlaylist(w http.ResponseWriter, r *http.Requ
 	render.Response(w, result, http.StatusOK)
 }
 
+func (handler *ReviewHandler) ReviewDeck(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)[pathVarID]
+	userID := r.Header.Get(headerUserId)
+
+	result, err := handler.reviewUseCase.ReviewDecks(id, userID)
+	if err != nil {
+		log.Logger.Errorw("Failed to review playlist", "error", err)
+		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
+		return
+	}
+
+	log.Logger.Debug("Deck has find successfully")
+	render.Response(w, result, http.StatusOK)
+}
+
 func (handler *ReviewHandler) CardResultRight(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)[pathVarID]
 	requestBody, err := handler.extractBody(r)
@@ -69,7 +84,6 @@ func (handler *ReviewHandler) CardResultWrong(w http.ResponseWriter, r *http.Req
 	log.Logger.Debug("Playlist has find successfully")
 	render.Response(w, result, http.StatusOK)
 }
-
 
 func (handler *ReviewHandler) FindById(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(headerUserId)

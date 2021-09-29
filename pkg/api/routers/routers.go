@@ -43,7 +43,8 @@ func (sys *SystemRoutes) SetupHandler() http.Handler {
 	r.HandleFunc(routers.CardPathId, sys.cardHandler.Delete).Methods(http.MethodDelete)
 	r.HandleFunc(routers.CardPathId, sys.cardHandler.FindById).Methods(http.MethodGet)
 
-	r.HandleFunc(routers.PlaylistReviewPathAll, sys.reviewHandler.ReviewPlaylist).Methods(http.MethodGet)
+	r.HandleFunc(routers.PlaylistReviewPath, sys.reviewHandler.ReviewPlaylist).Methods(http.MethodGet)
+	r.HandleFunc(routers.DeckReviewPath, sys.reviewHandler.ReviewDeck).Methods(http.MethodGet)
 	r.HandleFunc(routers.ReviewPathId, sys.reviewHandler.FindById).Methods(http.MethodGet)
 	r.HandleFunc(routers.ReviewPathIdWrong, sys.reviewHandler.CardResultWrong).Methods(http.MethodPost)
 	r.HandleFunc(routers.ReviewPathIdRight, sys.reviewHandler.CardResultRight).Methods(http.MethodPost)
