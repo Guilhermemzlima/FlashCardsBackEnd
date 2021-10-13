@@ -24,6 +24,7 @@ type IPlaylistUseCase interface {
 	Delete(id, userId string) (result *playlist.Playlist, err error)
 	Update(id, userId string, isPartial bool, playlist *playlist.Playlist) (*playlist.Playlist, error)
 	AddDeckToPlaylist(id, userId string, deckId string) (*playlist.Playlist, error)
+	FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error)
 }
 type PlaylistUseCase struct {
 	validator   *validator.Validate
@@ -93,6 +94,21 @@ func (uc PlaylistUseCase) FindByUserId(userId string) (result []*playlist.Playli
 
 func (uc PlaylistUseCase) FindByUserIdAndPublic(userId string) (result []*playlist.Playlist, count int64, err error) {
 	result, err = uc.repo.FindByUserIdAndPublic(userId)
+	if err != nil {
+		log.Logger.Errorw("playlist not found", "Error", err.Error())
+		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+
+	count, err = uc.repo.Count(userId)
+	if err != nil {
+		log.Logger.Errorw("Count playlists error", "Error", err.Error())
+		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
+	return result, count, nil
+}
+
+func (uc PlaylistUseCase) FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error) {
+	result, err = uc.repo.FindFilter(filter, userId)
 	if err != nil {
 		log.Logger.Errorw("playlist not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
