@@ -1,4 +1,4 @@
-module github.com/Guilhermemzlima/FlashCardsBackEnd
+module github.com/Guilhermemzlima/FlashCardsBackEndasdasdasda
 
 go 1.17
 
