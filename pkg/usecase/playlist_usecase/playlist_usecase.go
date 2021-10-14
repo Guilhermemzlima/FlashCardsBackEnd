@@ -24,20 +24,19 @@ type IPlaylistUseCase interface {
 	Delete(id, userId string) (result *playlist.Playlist, err error)
 	Update(id, userId string, isPartial bool, playlist *playlist.Playlist) (*playlist.Playlist, error)
 	AddDeckToPlaylist(id, userId string, deckId string) (*playlist.Playlist, error)
+	FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error)
 }
 type PlaylistUseCase struct {
 	validator   *validator.Validate
 	repo        playlist_repository.IPlaylistRepository
 	deckUseCase deck_usecase.DeckUseCase
-	cardUseCase card_usecase.CardUseCase
 }
 
-func NewPlaylistUseCase(playlistRepository playlist_repository.IPlaylistRepository, cardUseCase card_usecase.CardUseCase, deckRepo deck_usecase.DeckUseCase, validator *validator.Validate) PlaylistUseCase {
+func NewPlaylistUseCase(playlistRepository playlist_repository.IPlaylistRepository, deckRepo deck_usecase.DeckUseCase, validator *validator.Validate) PlaylistUseCase {
 	return PlaylistUseCase{
 		validator:   validator,
 		repo:        playlistRepository,
 		deckUseCase: deckRepo,
-		cardUseCase: cardUseCase,
 	}
 }
 
@@ -93,6 +92,21 @@ func (uc PlaylistUseCase) FindByUserId(userId string) (result []*playlist.Playli
 
 func (uc PlaylistUseCase) FindByUserIdAndPublic(userId string) (result []*playlist.Playlist, count int64, err error) {
 	result, err = uc.repo.FindByUserIdAndPublic(userId)
+	if err != nil {
+		log.Logger.Errorw("playlist not found", "Error", err.Error())
+		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+
+	count, err = uc.repo.Count(userId)
+	if err != nil {
+		log.Logger.Errorw("Count playlists error", "Error", err.Error())
+		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
+	return result, count, nil
+}
+
+func (uc PlaylistUseCase) FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error) {
+	result, err = uc.repo.FindFilter(filter, userId)
 	if err != nil {
 		log.Logger.Errorw("playlist not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())

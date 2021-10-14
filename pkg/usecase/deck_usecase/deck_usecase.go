@@ -7,6 +7,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/deck_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/review_usecase"
 	"github.com/go-playground/validator"
 	"github.com/imdario/mergo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,16 +21,20 @@ type IDeckUseCase interface {
 	FindByUserId(userId string) (result []*deck.Deck, count int64, err error)
 	Delete(id, userId string) (result *deck.Deck, err error)
 	Update(id, userId string, isPartial bool, deck *deck.Deck) (*deck.Deck, error)
+	FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error)
+	FindRecent(userId string) (result []*deck.Deck, count int64, err error)
 }
 type DeckUseCase struct {
-	validator *validator.Validate
-	repo      deck_repository.IDeckRepository
+	validator     *validator.Validate
+	repo          deck_repository.IDeckRepository
+	reviewUseCase review_usecase.IReviewUseCase
 }
 
-func NewDeckUseCase(deckRepository deck_repository.IDeckRepository, validator *validator.Validate) DeckUseCase {
+func NewDeckUseCase(deckRepository deck_repository.IDeckRepository, reviewUseCase review_usecase.IReviewUseCase, validator *validator.Validate) DeckUseCase {
 	return DeckUseCase{
-		validator: validator,
-		repo:      deckRepository,
+		validator:     validator,
+		repo:          deckRepository,
+		reviewUseCase: reviewUseCase,
 	}
 }
 
@@ -89,6 +94,26 @@ func (uc DeckUseCase) FindByUserIdAndPublic(userId string) (result []*deck.Deck,
 	if err != nil {
 		log.Logger.Errorw("deck not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+
+	count, err = uc.repo.Count(userId)
+	if err != nil {
+		log.Logger.Errorw("Count decks error", "Error", err.Error())
+		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
+	return result, count, nil
+}
+
+func (uc DeckUseCase) FindRecent(userId string) (result []*deck.Deck, count int64, err error) {
+	reviews, err := uc.reviewUseCase.FindRecentDecks(userId)
+
+	for _, s := range reviews {
+		deckFound, err := uc.repo.FindById(userId, s.Id, false)
+		if err != nil {
+			log.Logger.Errorw("deck not found", "Error", err.Error())
+			return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+		}
+		result = append(result, deckFound)
 	}
 
 	count, err = uc.repo.Count(userId)
@@ -172,6 +197,21 @@ func (uc DeckUseCase) Update(id, userId string, isPartial bool, deck *deck.Deck)
 	}
 
 	return result, nil
+}
+
+func (uc DeckUseCase) FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error) {
+	result, err = uc.repo.FindByFilters(filter, userId)
+	if err != nil {
+		log.Logger.Errorw("deck not found", "Error", err.Error())
+		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+
+	count, err = uc.repo.Count(userId)
+	if err != nil {
+		log.Logger.Errorw("Count decks error", "Error", err.Error())
+		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
+	return result, count, nil
 }
 
 //func (uc DeckUseCase) AddDeckToPlaylist(id, userId string, card *card.Card) (*deck.Deck, error) {

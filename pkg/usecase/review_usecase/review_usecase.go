@@ -18,22 +18,22 @@ import (
 
 type IReviewUseCase interface {
 	ReviewPlaylists(id, userId string) (map[string]interface{}, error)
+	ReviewDecks(id, userId string) (map[string]interface{}, error)
 	FindById(userId, id string) (result *review.Review, err error)
 	AddCardResult(sessionId, userId string, card *card.Card, isRight bool) (*review.Review, error)
-	ReviewDecks(id, userId string) (map[string]interface{}, error)
+	FindRecentDecks(userId string) (result []*review.Review, err error)
 }
 
 type ReviewUseCase struct {
-	validator       *validator.Validate
 	repo            review_repository.ReviewRepository
 	playlistUseCase playlist_usecase.PlaylistUseCase
 	deckUseCase     deck_usecase.DeckUseCase
 	cardUseCase     card_usecase.CardUseCase
 }
 
-func NewReviewUseCase(playlistUseCase playlist_usecase.PlaylistUseCase, repo review_repository.ReviewRepository, cardUseCase card_usecase.CardUseCase, deckUseCase deck_usecase.DeckUseCase, validator *validator.Validate) ReviewUseCase {
+func NewReviewUseCase(playlistUseCase playlist_usecase.PlaylistUseCase, repo review_repository.ReviewRepository, cardUseCase card_usecase.CardUseCase, deckUseCase deck_usecase.DeckUseCase) ReviewUseCase {
 	return ReviewUseCase{
-		validator:       validator,
+
 		repo:            repo,
 		playlistUseCase: playlistUseCase,
 		deckUseCase:     deckUseCase,
@@ -154,7 +154,14 @@ func (uc ReviewUseCase) FindById(userId, id string) (result *review.Review, err 
 	}
 	return result, nil
 }
-
+func (uc ReviewUseCase) FindRecentDecks(userId string) (result []*review.Review, err error) {
+	result, err = uc.repo.FindRecent(Enums.Deck, userId)
+	if err != nil {
+		log.Logger.Errorw("deck not found", "Error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+	return result, nil
+}
 func (uc ReviewUseCase) parseToObjectID(id string) (objID primitive.ObjectID, err error) {
 	if id == "" {
 		err := errors.WrapWithMessage(errors.ErrInvalidPayload, "id is required")
