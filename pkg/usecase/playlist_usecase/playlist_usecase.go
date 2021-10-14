@@ -1,13 +1,13 @@
 package playlist_usecase
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/internal/errors"
-	"FlashCardsBackEnd/pkg/model/deck"
-	"FlashCardsBackEnd/pkg/model/playlist"
-	"FlashCardsBackEnd/pkg/repository/playlist_repository"
-	"FlashCardsBackEnd/pkg/usecase/card_usecase"
-	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/playlist_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/card_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator"

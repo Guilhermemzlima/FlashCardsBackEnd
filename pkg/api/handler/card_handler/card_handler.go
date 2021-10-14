@@ -1,11 +1,11 @@
 package card_handler
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/internal/errors"
-	"FlashCardsBackEnd/pkg/api/render"
-	"FlashCardsBackEnd/pkg/model/card"
-	"FlashCardsBackEnd/pkg/usecase/card_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/render"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/card"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/card_usecase"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"

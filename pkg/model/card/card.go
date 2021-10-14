@@ -1,7 +1,7 @@
 package card
 
 import (
-	"FlashCardsBackEnd/pkg/model/Enums"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/Enums"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )

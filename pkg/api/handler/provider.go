@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"FlashCardsBackEnd/pkg/api/handler/card_handler"
-	"FlashCardsBackEnd/pkg/api/handler/deck_handler"
-	"FlashCardsBackEnd/pkg/api/handler/playlist_handler"
-	"FlashCardsBackEnd/pkg/api/handler/review_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/card_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/deck_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/playlist_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/review_handler"
 	"github.com/google/wire"
 )
 

@@ -1,10 +1,10 @@
 package repository
 
 import (
-	"FlashCardsBackEnd/pkg/repository/card_repository"
-	"FlashCardsBackEnd/pkg/repository/deck_repository"
-	"FlashCardsBackEnd/pkg/repository/playlist_repository"
-	"FlashCardsBackEnd/pkg/repository/review_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/card_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/deck_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/playlist_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/review_repository"
 	"github.com/google/wire"
 )
 

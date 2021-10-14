@@ -1,10 +1,10 @@
 package usecase
 
 import (
-	"FlashCardsBackEnd/pkg/usecase/card_usecase"
-	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
-	"FlashCardsBackEnd/pkg/usecase/playlist_usecase"
-	"FlashCardsBackEnd/pkg/usecase/review_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/card_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/playlist_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/review_usecase"
 	"github.com/google/wire"
 )
 

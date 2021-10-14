@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"FlashCardsBackEnd/pkg/api/render"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/render"
 	"errors"
 	"net/http"
 )

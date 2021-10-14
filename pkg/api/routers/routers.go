@@ -1,13 +1,13 @@
 package routers
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/pkg/api/handler/card_handler"
-	"FlashCardsBackEnd/pkg/api/handler/deck_handler"
-	"FlashCardsBackEnd/pkg/api/handler/playlist_handler"
-	review__handler "FlashCardsBackEnd/pkg/api/handler/review_handler"
-	"FlashCardsBackEnd/pkg/api/middleware"
-	"FlashCardsBackEnd/pkg/model/routers"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/card_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/deck_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/playlist_handler"
+	review__handler "github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/review_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/middleware"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/routers"
 	"github.com/gorilla/mux"
 	"net/http"
 )

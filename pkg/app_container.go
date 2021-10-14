@@ -1,12 +1,12 @@
 package pkg
 
 import (
-	"FlashCardsBackEnd/internal/config"
-	"FlashCardsBackEnd/internal/infra/mongodb"
-	handlers "FlashCardsBackEnd/pkg/api/handler"
-	"FlashCardsBackEnd/pkg/api/routers"
-	"FlashCardsBackEnd/pkg/repository"
-	"FlashCardsBackEnd/pkg/usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/infra/mongodb"
+	handlers "github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/routers"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase"
 	"github.com/google/wire"
 )
 

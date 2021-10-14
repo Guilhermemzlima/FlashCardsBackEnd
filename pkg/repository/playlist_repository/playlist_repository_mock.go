@@ -1,7 +1,7 @@
 package playlist_repository
 
 import (
-	"FlashCardsBackEnd/pkg/model/playlist"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
 	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

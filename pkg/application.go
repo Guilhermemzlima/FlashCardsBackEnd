@@ -1,8 +1,8 @@
 package pkg
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/pkg/api/routers"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/routers"
 )
 
 type Application struct {

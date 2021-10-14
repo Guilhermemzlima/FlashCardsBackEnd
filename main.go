@@ -1,7 +1,7 @@
 package main
 
 import (
-	log2 "FlashCardsBackEnd/internal/config/log"
+	log2 "github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/joho/godotenv"
 	"net/http"
 	"os"
