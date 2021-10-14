@@ -11,6 +11,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/card_usecase"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/playlist_usecase"
+	"github.com/go-playground/validator"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )

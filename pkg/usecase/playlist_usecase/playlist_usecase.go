@@ -8,6 +8,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/playlist_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/card_usecase"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"github.com/go-playground/validator"
 	"github.com/imdario/mergo"
