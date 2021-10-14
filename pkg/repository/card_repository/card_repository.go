@@ -1,8 +1,8 @@
 package card_repository
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/pkg/model/card"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/card"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

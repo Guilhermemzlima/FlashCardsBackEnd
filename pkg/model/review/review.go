@@ -1,7 +1,7 @@
 package review
 
 import (
-	"FlashCardsBackEnd/pkg/model/card"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/card"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )

@@ -1,11 +1,11 @@
 package deck_handler
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/internal/errors"
-	"FlashCardsBackEnd/pkg/api/render"
-	"FlashCardsBackEnd/pkg/model/deck"
-	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/render"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"

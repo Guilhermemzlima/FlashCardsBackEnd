@@ -3,7 +3,7 @@
 package main
 
 import (
-	"FlashCardsBackEnd/pkg"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg"
 	"github.com/google/wire"
 )
 

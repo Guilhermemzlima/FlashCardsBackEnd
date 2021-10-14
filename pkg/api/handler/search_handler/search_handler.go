@@ -1,10 +1,10 @@
 package search_handler
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/internal/errors"
-	"FlashCardsBackEnd/pkg/api/render"
-	"FlashCardsBackEnd/pkg/usecase/search_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/render"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/search_usecase"
 	"net/http"
 )
 

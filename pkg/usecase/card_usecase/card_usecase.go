@@ -1,11 +1,11 @@
 package card_usecase
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/internal/errors"
-	"FlashCardsBackEnd/pkg/model/card"
-	"FlashCardsBackEnd/pkg/repository/card_repository"
-	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/card"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/card_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator"

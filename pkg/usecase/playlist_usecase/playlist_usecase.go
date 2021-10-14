@@ -1,15 +1,14 @@
 package playlist_usecase
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/internal/errors"
-	"FlashCardsBackEnd/pkg/model/deck"
-	"FlashCardsBackEnd/pkg/model/playlist"
-	"FlashCardsBackEnd/pkg/repository/playlist_repository"
-	"FlashCardsBackEnd/pkg/usecase/card_usecase"
-	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"encoding/json"
 	"fmt"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/playlist_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"github.com/go-playground/validator"
 	"github.com/imdario/mergo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -30,15 +29,13 @@ type PlaylistUseCase struct {
 	validator   *validator.Validate
 	repo        playlist_repository.IPlaylistRepository
 	deckUseCase deck_usecase.DeckUseCase
-	cardUseCase card_usecase.CardUseCase
 }
 
-func NewPlaylistUseCase(playlistRepository playlist_repository.IPlaylistRepository, cardUseCase card_usecase.CardUseCase, deckRepo deck_usecase.DeckUseCase, validator *validator.Validate) PlaylistUseCase {
+func NewPlaylistUseCase(playlistRepository playlist_repository.IPlaylistRepository, deckRepo deck_usecase.DeckUseCase, validator *validator.Validate) PlaylistUseCase {
 	return PlaylistUseCase{
 		validator:   validator,
 		repo:        playlistRepository,
 		deckUseCase: deckRepo,
-		cardUseCase: cardUseCase,
 	}
 }
 

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"FlashCardsBackEnd/internal/config/validator"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/validator"
 	"github.com/google/wire"
 )
 

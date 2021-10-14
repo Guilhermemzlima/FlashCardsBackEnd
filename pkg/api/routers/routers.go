@@ -1,14 +1,14 @@
 package routers
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/pkg/api/handler/card_handler"
-	"FlashCardsBackEnd/pkg/api/handler/deck_handler"
-	"FlashCardsBackEnd/pkg/api/handler/playlist_handler"
-	review__handler "FlashCardsBackEnd/pkg/api/handler/review_handler"
-	"FlashCardsBackEnd/pkg/api/handler/search_handler"
-	"FlashCardsBackEnd/pkg/api/middleware"
-	"FlashCardsBackEnd/pkg/model/routers"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/card_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/deck_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/playlist_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/review_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/handler/search_handler"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/middleware"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/routers"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -17,7 +17,7 @@ type SystemRoutes struct {
 	playlistHandler playlist_handler.PlaylistHandler
 	deckHandler     deck_handler.DeckHandler
 	cardHandler     card_handler.CardHandler
-	reviewHandler   review__handler.ReviewHandler
+	reviewHandler   review_handler.ReviewHandler
 	searchHandler   search_handler.SearchHandler
 }
 
@@ -52,12 +52,13 @@ func (sys *SystemRoutes) SetupHandler() http.Handler {
 	r.HandleFunc(routers.ReviewPathIdWrong, sys.reviewHandler.CardResultWrong).Methods(http.MethodPost)
 	r.HandleFunc(routers.ReviewPathIdRight, sys.reviewHandler.CardResultRight).Methods(http.MethodPost)
 
-	r.HandleFunc(routers.SearchPath, sys.searchHandler.FindByFilters).Methods(http.MethodGet)
+	//r.HandleFunc(routers.SearchPath, sys.searchHandler.FindByFilters).Methods(http.MethodGet)
 
 	r.Use(middleware.Header)
 	return r
 }
-func NewSystemRoutes(playlistHandler playlist_handler.PlaylistHandler, searchHandler search_handler.SearchHandler, reviewHandler review__handler.ReviewHandler, cardHandler card_handler.CardHandler, deckHandler deck_handler.DeckHandler) SystemRoutes {
+func NewSystemRoutes(playlistHandler playlist_handler.PlaylistHandler, deckHandler deck_handler.DeckHandler,
+	cardHandler card_handler.CardHandler, reviewHandler review_handler.ReviewHandler, searchHandler search_handler.SearchHandler) SystemRoutes {
 	log.Logger.Info("Creating System Main Routers")
 	return SystemRoutes{
 		playlistHandler: playlistHandler,

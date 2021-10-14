@@ -1,10 +1,10 @@
 package search_usecase
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/internal/errors"
-	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
-	"FlashCardsBackEnd/pkg/usecase/playlist_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/playlist_usecase"
 	"github.com/go-playground/validator"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

@@ -2,11 +2,11 @@ package playlist_usecase
 
 //
 //import (
-//	"FlashCardsBackEnd/internal/config/validator"
-//	"FlashCardsBackEnd/pkg/model/playlist"
-//	"FlashCardsBackEnd/pkg/repository/playlist_repository"
-//	utils "FlashCardsBackEnd/pkg/test"
-//	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
+//	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/validator"
+//	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
+//	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/playlist_repository"
+//	utils "github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/test"
+//	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 //	"github.com/stretchr/testify/assert"
 //	"github.com/stretchr/testify/mock"
 //	"testing"

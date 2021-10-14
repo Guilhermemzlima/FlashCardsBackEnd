@@ -1,7 +1,7 @@
 package playlist
 
 import (
-	"FlashCardsBackEnd/pkg/model/deck"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )

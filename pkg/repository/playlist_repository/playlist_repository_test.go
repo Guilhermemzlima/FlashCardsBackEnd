@@ -1,10 +1,10 @@
 package playlist_repository
 //
 //import (
-//	"FlashCardsBackEnd/internal/config/log"
-//	"FlashCardsBackEnd/internal/infra/mongodb"
-//	"FlashCardsBackEnd/pkg/model/playlist"
-//	utils "FlashCardsBackEnd/pkg/test"
+//	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+//	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/infra/mongodb"
+//	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
+//	utils "github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/test"
 //	"github.com/stretchr/testify/assert"
 //	"testing"
 //)

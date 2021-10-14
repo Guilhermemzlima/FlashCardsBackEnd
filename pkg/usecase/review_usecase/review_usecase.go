@@ -1,17 +1,16 @@
 package review_usecase
 
 import (
-	"FlashCardsBackEnd/internal/config/log"
-	"FlashCardsBackEnd/internal/errors"
-	"FlashCardsBackEnd/pkg/model/Enums"
-	"FlashCardsBackEnd/pkg/model/card"
-	"FlashCardsBackEnd/pkg/model/review"
-	"FlashCardsBackEnd/pkg/repository/review_repository"
-	"FlashCardsBackEnd/pkg/usecase/card_usecase"
-	"FlashCardsBackEnd/pkg/usecase/deck_usecase"
-	"FlashCardsBackEnd/pkg/usecase/playlist_usecase"
 	"fmt"
-	"github.com/go-playground/validator"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/Enums"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/card"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/review"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/review_repository"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/card_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/playlist_usecase"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -25,16 +24,15 @@ type IReviewUseCase interface {
 }
 
 type ReviewUseCase struct {
-	validator       *validator.Validate
 	repo            review_repository.ReviewRepository
 	playlistUseCase playlist_usecase.PlaylistUseCase
 	deckUseCase     deck_usecase.DeckUseCase
 	cardUseCase     card_usecase.CardUseCase
 }
 
-func NewReviewUseCase(playlistUseCase playlist_usecase.PlaylistUseCase, repo review_repository.ReviewRepository, cardUseCase card_usecase.CardUseCase, deckUseCase deck_usecase.DeckUseCase, validator *validator.Validate) ReviewUseCase {
+func NewReviewUseCase(playlistUseCase playlist_usecase.PlaylistUseCase, repo review_repository.ReviewRepository, cardUseCase card_usecase.CardUseCase, deckUseCase deck_usecase.DeckUseCase) ReviewUseCase {
 	return ReviewUseCase{
-		validator:       validator,
+
 		repo:            repo,
 		playlistUseCase: playlistUseCase,
 		deckUseCase:     deckUseCase,

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"FlashCardsBackEnd/pkg/model/playlist"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
 	"time"
 )
 
