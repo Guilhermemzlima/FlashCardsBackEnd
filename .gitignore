@@ -8,6 +8,8 @@
 # Generated dependency injection file
 wire_gen.go
 pkg/mod
+go.mod
+go.sum
 # IntelliJ IDEA files
 .idea
 .directory
