@@ -94,12 +94,9 @@ func (a ReviewRepository) FindRecent(originType, userId string) (reviewResult []
 	findOptions.SetLimit(10).SetSkip(0)
 	findOptions.SetSort(bson.D{{"lastUpdate", mongodb.DESC}})
 
-	query := bson.M{"originType": originType, "$or": []interface{}{
-		bson.M{"isPrivate": false},
-		bson.M{"userId": userId},
-	}}
+	query := bson.M{"originType": originType, "userId": userId}
 
-	result, err := col.Find(ctx, query)
+	result, err := col.Find(ctx, query, findOptions)
 	if result.Err() != nil {
 		log.Logger.Warn("Find reviewReturn has failed", "Error", result.Err())
 		return nil, errors.Wrap(result.Err(), "error trying to find reviewReturn by id")

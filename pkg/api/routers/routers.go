@@ -52,7 +52,7 @@ func (sys *SystemRoutes) SetupHandler() http.Handler {
 	r.HandleFunc(routers.ReviewPathIdWrong, sys.reviewHandler.CardResultWrong).Methods(http.MethodPost)
 	r.HandleFunc(routers.ReviewPathIdRight, sys.reviewHandler.CardResultRight).Methods(http.MethodPost)
 
-	//r.HandleFunc(routers.SearchPath, sys.searchHandler.FindByFilters).Methods(http.MethodGet)
+	r.HandleFunc(routers.SearchPath, sys.searchHandler.FindByFilters).Methods(http.MethodGet)
 
 	r.Use(middleware.Header)
 	return r

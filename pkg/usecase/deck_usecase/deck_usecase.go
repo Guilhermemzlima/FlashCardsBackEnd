@@ -109,7 +109,11 @@ func (uc DeckUseCase) FindRecent(userId string) (result []*deck.Deck, count int6
 	reviews, err := uc.reviewRepo.FindRecent(Enums.Deck, userId)
 
 	for _, s := range reviews {
-		deckFound, err := uc.repo.FindById(userId, s.Id, false)
+		objectID, err := uc.parseToObjectID(s.OriginId)
+		if err != nil {
+			return nil, 0, err
+		}
+		deckFound, err := uc.repo.FindById(userId, &objectID, false)
 		if err != nil {
 			log.Logger.Errorw("deck not found", "Error", err.Error())
 			return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())

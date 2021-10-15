@@ -15,7 +15,7 @@ const (
 	DeckPathId     = DeckPath + "/{id}"
 	DeckReviewPath = DeckPathId + "/review"
 	DeckPathAll    = DeckPath + "/all"
-	DeckRecentPath = DeckPath + "/recent"
+	DeckRecentPath = DeckPath + "/recent/"
 
 	CardPath       = ApiPath + "/cards"
 	CardPathId     = CardPath + "/{id}"
