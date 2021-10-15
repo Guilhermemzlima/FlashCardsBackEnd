@@ -17,6 +17,7 @@ import (
 type IReviewRepository interface {
 	Persist(reviewToPersist *review.Review) (*review.Review, error)
 	FindById(userId string, id *primitive.ObjectID, private bool) (reviewReturn *review.Review, err error)
+	FindRecent(originType, userId string) (reviewResult []*review.Review, err error)
 	//FindByDeckId(userId, deckId string, private bool) (reviewReturn []*review.Review, err error)
 	//Update(id *primitive.ObjectID, userId string, reviewToSave *review.Review) (*review.Review, error)
 	//Count(userId string) (count int64, err error)

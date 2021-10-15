@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/Enums"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/deck_repository"
-	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/review_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/review_repository"
 	"github.com/go-playground/validator"
 	"github.com/imdario/mergo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -25,16 +26,16 @@ type IDeckUseCase interface {
 	FindRecent(userId string) (result []*deck.Deck, count int64, err error)
 }
 type DeckUseCase struct {
-	validator     *validator.Validate
-	repo          deck_repository.IDeckRepository
-	reviewUseCase review_usecase.IReviewUseCase
+	validator  *validator.Validate
+	repo       deck_repository.IDeckRepository
+	reviewRepo review_repository.IReviewRepository
 }
 
-func NewDeckUseCase(deckRepository deck_repository.IDeckRepository, reviewUseCase review_usecase.IReviewUseCase, validator *validator.Validate) DeckUseCase {
+func NewDeckUseCase(deckRepository deck_repository.IDeckRepository, reviewRepo review_repository.IReviewRepository, validator *validator.Validate) DeckUseCase {
 	return DeckUseCase{
-		validator:     validator,
-		repo:          deckRepository,
-		reviewUseCase: reviewUseCase,
+		validator:  validator,
+		repo:       deckRepository,
+		reviewRepo: reviewRepo,
 	}
 }
 
@@ -105,7 +106,7 @@ func (uc DeckUseCase) FindByUserIdAndPublic(userId string) (result []*deck.Deck,
 }
 
 func (uc DeckUseCase) FindRecent(userId string) (result []*deck.Deck, count int64, err error) {
-	reviews, err := uc.reviewUseCase.FindRecentDecks(userId)
+	reviews, err := uc.reviewRepo.FindRecent(Enums.Deck, userId)
 
 	for _, s := range reviews {
 		deckFound, err := uc.repo.FindById(userId, s.Id, false)
