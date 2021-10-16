@@ -40,6 +40,7 @@ func (uc CardUseCase) Create(userId, deckId string, card *card.Card) (result *ca
 	card.UserId = userId
 	card.DeckId = deckId
 	card.LastUpdate = time.Now()
+	card.CreatedAt = time.Now()
 
 	err = uc.validator.Struct(card)
 	if err != nil {

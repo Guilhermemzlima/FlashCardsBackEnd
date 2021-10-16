@@ -5,6 +5,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/render"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/filter"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/playlist_usecase"
 	"github.com/gorilla/mux"
@@ -62,7 +63,8 @@ func (handler *PlaylistHandler) FindById(w http.ResponseWriter, r *http.Request)
 func (handler *PlaylistHandler) FindByUserIdAndPublic(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(headerUserId)
 
-	result, count, err := handler.playlistUseCase.FindByUserIdAndPublic(userID)
+	pagination := handler.buildPagination(r)
+	result, count, err := handler.playlistUseCase.FindByUserId(userID, pagination, false)
 	if err != nil {
 		log.Logger.Errorw("Failed to find playlist", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
@@ -89,7 +91,8 @@ func (handler *PlaylistHandler) FindDecksByPlaylistId(w http.ResponseWriter, r *
 func (handler *PlaylistHandler) FindByUserId(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(headerUserId)
 
-	result, count, err := handler.playlistUseCase.FindByUserId(userID)
+	pagination := handler.buildPagination(r)
+	result, count, err := handler.playlistUseCase.FindByUserId(userID, pagination, true)
 	if err != nil {
 		log.Logger.Errorw("Failed to find playlist", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
@@ -187,4 +190,11 @@ func GenerateHTTPErrorStatusCode(err error) int {
 	default:
 		return http.StatusInternalServerError
 	}
+}
+
+func (handler *PlaylistHandler) buildPagination(r *http.Request) (pagination *filter.Pagination) {
+	reqQuery := r.URL.Query()
+	limit, _ := strconv.ParseInt(reqQuery.Get("limit"), 10, 64)
+	offset, _ := strconv.ParseInt(reqQuery.Get("offset"), 10, 64)
+	return filter.NewPagination(limit, offset)
 }

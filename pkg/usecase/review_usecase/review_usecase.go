@@ -20,7 +20,6 @@ type IReviewUseCase interface {
 	ReviewDecks(id, userId string) (map[string]interface{}, error)
 	FindById(userId, id string) (result *review.Review, err error)
 	AddCardResult(sessionId, userId, cardId string, isRight bool) (*review.Review, error)
-	FindRecentDecks(userId string) (result []*review.Review, err error)
 }
 
 type ReviewUseCase struct {
@@ -63,7 +62,8 @@ func (uc ReviewUseCase) ReviewPlaylists(id, userId string) (map[string]interface
 		HistsCount:    0,
 		Mistakes:      nil,
 		MistakesCount: 0,
-		LastUpdate:    time.Time{},
+		LastUpdate:    time.Now(),
+		CreatedAt:     time.Now(),
 	})
 	if err != nil {
 		return nil, err
@@ -97,6 +97,7 @@ func (uc ReviewUseCase) ReviewDecks(id, userId string) (map[string]interface{}, 
 		Mistakes:      nil,
 		MistakesCount: 0,
 		LastUpdate:    time.Now(),
+		CreatedAt:     time.Now(),
 	})
 	if err != nil {
 		return nil, err
@@ -154,14 +155,7 @@ func (uc ReviewUseCase) FindById(userId, id string) (result *review.Review, err 
 	}
 	return result, nil
 }
-func (uc ReviewUseCase) FindRecentDecks(userId string) (result []*review.Review, err error) {
-	result, err = uc.repo.FindRecent(Enums.Deck, userId)
-	if err != nil {
-		log.Logger.Errorw("deck not found", "Error", err.Error())
-		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
-	}
-	return result, nil
-}
+
 func (uc ReviewUseCase) parseToObjectID(id string) (objID primitive.ObjectID, err error) {
 	if id == "" {
 		err := errors.WrapWithMessage(errors.ErrInvalidPayload, "id is required")

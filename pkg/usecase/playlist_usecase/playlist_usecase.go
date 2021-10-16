@@ -6,6 +6,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/filter"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/playlist_repository"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
@@ -17,13 +18,12 @@ import (
 
 type IPlaylistUseCase interface {
 	Create(userId string, playlist *playlist.Playlist) (result *playlist.Playlist, err error)
-	FindByUserIdAndPublic(userId string) (result []*playlist.Playlist, count int64, err error)
 	FindById(userId, id string) (result *playlist.Playlist, err error)
-	FindByUserId(userId string) (result []*playlist.Playlist, count int64, err error)
+	FindByUserId(userId string, pagination *filter.Pagination, private bool) (result []*playlist.Playlist, count int64, err error)
 	Delete(id, userId string) (result *playlist.Playlist, err error)
 	Update(id, userId string, isPartial bool, playlist *playlist.Playlist) (*playlist.Playlist, error)
 	AddDeckToPlaylist(id, userId string, deckId string) (*playlist.Playlist, error)
-	FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error)
+	FindBySearch(filter, userId string, pagination *filter.Pagination) (result []map[string]interface{}, count int64, err error)
 	FindDecksOnPlaylist(userId, playlistId string) (result []*deck.Deck, err error)
 	RemoveDeckFromPlaylist(id, userId string, deckId string) (*playlist.Playlist, error)
 }
@@ -44,6 +44,7 @@ func NewPlaylistUseCase(playlistRepository playlist_repository.IPlaylistReposito
 func (uc PlaylistUseCase) Create(userId string, playlist *playlist.Playlist) (result *playlist.Playlist, err error) {
 	playlist.UserId = userId
 	playlist.LastUpdate = time.Now()
+	playlist.CreatedAt = time.Now()
 
 	err = uc.validator.Struct(playlist)
 	if err != nil {
@@ -75,34 +76,19 @@ func (uc PlaylistUseCase) FindById(userId, id string) (result *playlist.Playlist
 	return result, nil
 }
 
-func (uc PlaylistUseCase) FindByUserId(userId string) (result []*playlist.Playlist, count int64, err error) {
-	result, err = uc.repo.FindByUserId(userId)
+func (uc PlaylistUseCase) FindByUserId(userId string, pagination *filter.Pagination, private bool) (result []*playlist.Playlist, count int64, err error) {
+	result, err = uc.repo.FindByUserId(userId, pagination, private)
 	if err != nil {
 		log.Logger.Errorw("playlist not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
 	}
 
-	count, err = uc.repo.Count(userId)
+	count, err = uc.repo.Count(userId, private)
 	if err != nil {
 		log.Logger.Errorw("Count playlists error", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
 	}
 
-	return result, count, nil
-}
-
-func (uc PlaylistUseCase) FindByUserIdAndPublic(userId string) (result []*playlist.Playlist, count int64, err error) {
-	result, err = uc.repo.FindByUserIdAndPublic(userId)
-	if err != nil {
-		log.Logger.Errorw("playlist not found", "Error", err.Error())
-		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
-	}
-
-	count, err = uc.repo.Count(userId)
-	if err != nil {
-		log.Logger.Errorw("Count playlists error", "Error", err.Error())
-		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
-	}
 	return result, count, nil
 }
 
@@ -121,19 +107,14 @@ func (uc PlaylistUseCase) FindDecksOnPlaylist(userId, playlistId string) (result
 
 }
 
-func (uc PlaylistUseCase) FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error) {
-	result, err = uc.repo.FindFilter(filter, userId)
+func (uc PlaylistUseCase) FindBySearch(filter, userId string, pagination *filter.Pagination) (result []map[string]interface{}, count int64, err error) {
+	result, count, err = uc.repo.FindFilter(filter, userId, pagination)
 	if err != nil {
 		log.Logger.Errorw("playlist not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
 	}
 
-	count, err = uc.repo.Count(userId)
-	if err != nil {
-		log.Logger.Errorw("Count playlists error", "Error", err.Error())
-		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
-	}
-	return result, count, nil
+	return
 }
 
 func (uc PlaylistUseCase) parseToObjectID(id string) (objID primitive.ObjectID, err error) {

@@ -15,4 +15,5 @@ type Deck struct {
 	CardsCount       int64               `json:"cardsCount" bson:"cardsCount"`
 	UserId           string              `json:"userId" bson:"userId"`
 	LastUpdate       time.Time           `json:"lastUpdate,omitempty" bson:"lastUpdate,omitempty"`
+	CreatedAt        time.Time           `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 }

@@ -3,6 +3,7 @@ package review_repository
 import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/infra/mongodb"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/filter"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/review"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,7 +18,7 @@ import (
 type IReviewRepository interface {
 	Persist(reviewToPersist *review.Review) (*review.Review, error)
 	FindById(userId string, id *primitive.ObjectID, private bool) (reviewReturn *review.Review, err error)
-	FindRecent(originType, userId string) (reviewResult []*review.Review, err error)
+	FindRecent(originType string, pagination *filter.Pagination, userId string) (reviewResult []*review.Review, err error)
 	//FindByDeckId(userId, deckId string, private bool) (reviewReturn []*review.Review, err error)
 	//Update(id *primitive.ObjectID, userId string, reviewToSave *review.Review) (*review.Review, error)
 	//Count(userId string) (count int64, err error)
@@ -86,12 +87,12 @@ func (a ReviewRepository) FindById(userId string, id *primitive.ObjectID, privat
 	return reviewReturn, nil
 }
 
-func (a ReviewRepository) FindRecent(originType, userId string) (reviewResult []*review.Review, err error) {
+func (a ReviewRepository) FindRecent(originType string, pagination *filter.Pagination, userId string) (reviewResult []*review.Review, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	col := a.client.Database(a.database).Collection(a.reviewCollection)
 	findOptions := options.Find()
-	findOptions.SetLimit(10).SetSkip(0)
+	findOptions.SetLimit(pagination.Limit).SetSkip(pagination.Skip)
 	findOptions.SetSort(bson.D{{"lastUpdate", mongodb.DESC}})
 
 	query := bson.M{"originType": originType, "userId": userId}

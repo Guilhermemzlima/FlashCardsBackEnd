@@ -3,11 +3,14 @@ package playlist_repository
 import (
 	"context"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/infra/mongodb"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/filter"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
 	"time"
 )
@@ -15,12 +18,11 @@ import (
 type IPlaylistRepository interface {
 	Persist(playlistToPersist *playlist.Playlist) (*playlist.Playlist, error)
 	FindById(userId string, id *primitive.ObjectID, private bool) (result *playlist.Playlist, err error)
-	FindByUserIdAndPublic(userId string) (result []*playlist.Playlist, err error)
-	FindByUserId(userId string) (result []*playlist.Playlist, err error)
-	Count(userId string) (count int64, err error)
+	FindByUserId(userId string, pagination *filter.Pagination, private bool) (playlistResult []*playlist.Playlist, err error)
+	Count(userId string, private bool) (count int64, err error)
 	Delete(userId string, id *primitive.ObjectID) (result *playlist.Playlist, err error)
 	Update(id *primitive.ObjectID, userId string, playlistToSave *playlist.Playlist) (*playlist.Playlist, error)
-	FindFilter(filter, userId string) (playlistResult []map[string]interface{}, err error)
+	FindFilter(filter, userId string, pagination *filter.Pagination) (playlistResult []map[string]interface{}, count int64, err error)
 }
 
 type PlaylistRepository struct {
@@ -85,12 +87,25 @@ func (a PlaylistRepository) FindById(userId string, id *primitive.ObjectID, priv
 	return playlist, nil
 }
 
-func (a PlaylistRepository) FindByUserId(userId string) (playlistResult []*playlist.Playlist, err error) {
+func (a PlaylistRepository) FindByUserId(userId string, pagination *filter.Pagination, private bool) (playlistResult []*playlist.Playlist, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	col := a.client.Database(a.database).Collection(a.playlistCollection)
-	result, err := col.Find(ctx, bson.M{"userId": userId})
+	findOptions := options.Find()
+	findOptions.SetLimit(pagination.Limit).SetSkip(pagination.Skip)
+	findOptions.SetSort(bson.D{{"createdAt", mongodb.ASC}})
+
+	privateResult := bson.M{}
+	if !private {
+		privateResult = bson.M{"isPrivate": false}
+	}
+
+	query := bson.M{"$or": []interface{}{
+		privateResult,
+		bson.M{"userId": userId},
+	}}
+	result, err := col.Find(ctx, query, findOptions)
 
 	if err != nil {
 		log.Logger.Errorw("Find has failed", errorString, err.Error())
@@ -117,39 +132,21 @@ func (a PlaylistRepository) FindByUserId(userId string) (playlistResult []*playl
 	return
 }
 
-func (a PlaylistRepository) FindByUserIdAndPublic(userId string) (playlistResult []*playlist.Playlist, err error) {
+func (a PlaylistRepository) Count(userId string, private bool) (count int64, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	col := a.client.Database(a.database).Collection(a.playlistCollection)
+	privateResult := bson.M{}
+	if !private {
+		privateResult = bson.M{"isPrivate": false}
+	}
+
 	query := bson.M{"$or": []interface{}{
-		bson.M{"isPrivate": false},
+		privateResult,
 		bson.M{"userId": userId},
 	}}
-	result, err := col.Find(ctx, query)
 
-	if err != nil {
-		log.Logger.Errorw("Find has failed", errorString, err.Error())
-		return nil, errors.Wrap(err, "error trying to find playlists")
-	}
-
-	playlistResult = make([]*playlist.Playlist, 0)
-	for result.Next(ctx) {
-		var playlistElement *playlist.Playlist
-		err := result.Decode(&playlistElement)
-		if err != nil {
-			log.Logger.Errorw("Parser Playlist has failed", "error", err.Error())
-			return nil, errors.Wrap(err, "error trying to parse Playlist")
-		}
-		playlistResult = append(playlistResult, playlistElement)
-	}
-	return
-}
-func (a PlaylistRepository) Count(userId string) (count int64, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	count, err = a.client.Database(a.database).Collection(a.playlistCollection).CountDocuments(ctx, bson.M{"userId": userId})
+	count, err = a.client.Database(a.database).Collection(a.playlistCollection).CountDocuments(ctx, query)
 	if err != nil {
 		log.Logger.Errorw("Count playlists has failed", "error", err.Error())
 		return 0, errors.Wrap(err, "error trying to count playlists")
@@ -201,42 +198,15 @@ func (a PlaylistRepository) Update(id *primitive.ObjectID, userId string, playli
 	return playlist, nil
 }
 
-//func (a PlaylistRepository) FindFilter(filter, userId string) (playlistResult []*playlist.Playlist, err error) {
-//	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-//	defer cancel()
-//	result, err := a.client.Database(a.database).Collection(a.playlistCollection).Find(ctx, bson.M{"name": bson.M{"$regex": primitive.Regex{
-//		Pattern: "/.*" + filter + ".*/",
-//		Options: "i",
-//	}},
-//		"$or": []interface{}{
-//			bson.M{"isPrivate": false},
-//			bson.M{"userId": userId},
-//		},
-//	})
-//
-//	if err != nil {
-//		log.Logger.Errorw("Find has failed", errorString, err.Error())
-//		return nil, errors.Wrap(err, "error trying to find playlists")
-//	}
-//
-//	playlistResult = make([]*playlist.Playlist, 0)
-//	for result.Next(ctx) {
-//		var playlistElement *playlist.Playlist
-//		err := result.Decode(&playlistElement)
-//		if err != nil {
-//			log.Logger.Errorw("Parser Playlist has failed", "error", err.Error())
-//			return nil, errors.Wrap(err, "error trying to parse Playlist")
-//		}
-//		playlistResult = append(playlistResult, playlistElement)
-//	}
-//	return
-//}
-
-func (a PlaylistRepository) FindFilter(filter, userId string) (playlistResult []map[string]interface{}, err error) {
+func (a PlaylistRepository) FindFilter(filter, userId string, pagination *filter.Pagination) (playlistResult []map[string]interface{}, count int64, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	col := a.client.Database(a.database).Collection(a.playlistCollection)
+
+	findOptions := options.Find()
+	findOptions.SetLimit(pagination.Limit / 2).SetSkip(pagination.Skip)
+	findOptions.SetSort(bson.D{{"lastUpdate", mongodb.DESC}})
 
 	query := bson.M{"name": bson.M{"$regex": primitive.Regex{
 		Pattern: ".*" + filter + ".*",
@@ -247,11 +217,16 @@ func (a PlaylistRepository) FindFilter(filter, userId string) (playlistResult []
 			bson.M{"userId": userId},
 		}}
 
-	result, err := col.Find(ctx, query)
-
+	result, err := col.Find(ctx, query, findOptions)
 	if err != nil {
 		log.Logger.Errorw("Find has failed", errorString, err.Error())
-		return nil, errors.Wrap(err, "error trying to find playlists")
+		return nil, 0, errors.Wrap(err, "error trying to find playlists")
+	}
+
+	count, err = col.CountDocuments(ctx, query)
+	if err != nil {
+		log.Logger.Errorw("Count Playlist has failed", "error", err.Error())
+		return nil, 0, errors.Wrap(err, "error trying to count Playlist")
 	}
 
 	playlistResult = make([]map[string]interface{}, 0)
@@ -260,7 +235,7 @@ func (a PlaylistRepository) FindFilter(filter, userId string) (playlistResult []
 		err := result.Decode(&playlistElement)
 		if err != nil {
 			log.Logger.Errorw("Parser Playlist has failed", "error", err.Error())
-			return nil, errors.Wrap(err, "error trying to parse Playlist")
+			return nil, 0, errors.Wrap(err, "error trying to parse Playlist")
 		}
 		playlistResult = append(playlistResult, playlistElement)
 	}

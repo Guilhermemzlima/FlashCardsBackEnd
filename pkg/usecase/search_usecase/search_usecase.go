@@ -3,6 +3,7 @@ package search_usecase
 import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/filter"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/playlist_usecase"
 	"github.com/go-playground/validator"
@@ -10,7 +11,7 @@ import (
 )
 
 type ISearchUseCase interface {
-	Search(filter, userId string) (result []map[string]interface{}, err error)
+	Search(filter, userId string, pagination *filter.Pagination) (result []map[string]interface{}, count int64, err error)
 }
 
 type SearchUseCase struct {
@@ -27,22 +28,23 @@ func NewSearchUseCase(playlistUseCase playlist_usecase.PlaylistUseCase, deckUseC
 	}
 }
 
-func (uc SearchUseCase) Search(filter, userId string) (result []map[string]interface{}, err error) {
-	playlistSearched, _, err := uc.playlistUseCase.FindBySearch(filter, userId)
+func (uc SearchUseCase) Search(filter, userId string, pagination *filter.Pagination) (result []map[string]interface{}, count int64, err error) {
+	playlistSearched, countPlaylist, err := uc.playlistUseCase.FindBySearch(filter, userId, pagination)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	result = append(result, playlistSearched...)
 
-	decksSearched, _, err := uc.deckUseCase.FindBySearch(filter, userId)
+	decksSearched, countDeck, err := uc.deckUseCase.FindBySearch(filter, userId, pagination)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	result = append(result, decksSearched...)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
+	count = countPlaylist + countDeck
 	return
 }
 

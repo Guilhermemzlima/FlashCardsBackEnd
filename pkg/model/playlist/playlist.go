@@ -15,4 +15,5 @@ type Playlist struct {
 	Decks            []string            `json:"decks" bson:"decks"`
 	UserId           string              `json:"userId" bson:"userId"`
 	LastUpdate       time.Time           `json:"lastUpdate,omitempty" bson:"lastUpdate,omitempty"`
+	CreatedAt        time.Time           `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 }

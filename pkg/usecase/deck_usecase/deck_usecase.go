@@ -7,6 +7,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/Enums"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/filter"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/deck_repository"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/review_repository"
 	"github.com/go-playground/validator"
@@ -17,13 +18,12 @@ import (
 
 type IDeckUseCase interface {
 	Create(userId string, deck *deck.Deck) (result *deck.Deck, err error)
-	FindByUserIdAndPublic(userId string) (result []*deck.Deck, count int64, err error)
 	FindById(userId, id string) (result *deck.Deck, err error)
-	FindByUserId(userId string) (result []*deck.Deck, count int64, err error)
+	FindByUserId(userId string, pagination *filter.Pagination, private bool) (result []*deck.Deck, count int64, err error)
 	Delete(id, userId string) (result *deck.Deck, err error)
 	Update(id, userId string, isPartial bool, deck *deck.Deck) (*deck.Deck, error)
-	FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error)
-	FindRecent(userId string) (result []*deck.Deck, count int64, err error)
+	FindBySearch(filter, userId string, pagination *filter.Pagination) (result []map[string]interface{}, count int64, err error)
+	FindRecent(userId string, pagination *filter.Pagination) (result []*deck.Deck, count int64, err error)
 }
 type DeckUseCase struct {
 	validator  *validator.Validate
@@ -42,6 +42,7 @@ func NewDeckUseCase(deckRepository deck_repository.IDeckRepository, reviewRepo r
 func (uc DeckUseCase) Create(userId string, deck *deck.Deck) (result *deck.Deck, err error) {
 	deck.UserId = userId
 	deck.LastUpdate = time.Now()
+	deck.CreatedAt = time.Now()
 	deck.CardsCount = 0
 
 	err = uc.validator.Struct(deck)
@@ -92,14 +93,14 @@ func (uc DeckUseCase) FindByIdArray(userId string, ids []string) (result []*deck
 	return result, nil
 }
 
-func (uc DeckUseCase) FindByUserId(userId string) (result []*deck.Deck, count int64, err error) {
-	result, err = uc.repo.FindByUserId(userId)
+func (uc DeckUseCase) FindByUserId(userId string, pagination *filter.Pagination, private bool) (result []*deck.Deck, count int64, err error) {
+	result, err = uc.repo.FindByUserId(userId, pagination, private)
 	if err != nil {
 		log.Logger.Errorw("deck not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
 	}
 
-	count, err = uc.repo.Count(userId)
+	count, err = uc.repo.Count(userId, private)
 	if err != nil {
 		log.Logger.Errorw("Count decks error", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
@@ -108,23 +109,8 @@ func (uc DeckUseCase) FindByUserId(userId string) (result []*deck.Deck, count in
 	return result, count, nil
 }
 
-func (uc DeckUseCase) FindByUserIdAndPublic(userId string) (result []*deck.Deck, count int64, err error) {
-	result, err = uc.repo.FindByUserIdAndPublic(userId)
-	if err != nil {
-		log.Logger.Errorw("deck not found", "Error", err.Error())
-		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
-	}
-
-	count, err = uc.repo.Count(userId)
-	if err != nil {
-		log.Logger.Errorw("Count decks error", "Error", err.Error())
-		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
-	}
-	return result, count, nil
-}
-
-func (uc DeckUseCase) FindRecent(userId string) (result []*deck.Deck, count int64, err error) {
-	reviews, err := uc.reviewRepo.FindRecent(Enums.Deck, userId)
+func (uc DeckUseCase) FindRecent(userId string, pagination *filter.Pagination) (result []*deck.Deck, count int64, err error) {
+	reviews, err := uc.reviewRepo.FindRecent(Enums.Deck, pagination, userId)
 
 	for _, s := range reviews {
 		objectID, err := uc.parseToObjectID(s.OriginId)
@@ -139,7 +125,7 @@ func (uc DeckUseCase) FindRecent(userId string) (result []*deck.Deck, count int6
 		result = append(result, deckFound)
 	}
 
-	count, err = uc.repo.Count(userId)
+	count, err = uc.repo.Count(userId, false)
 	if err != nil {
 		log.Logger.Errorw("Count decks error", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
@@ -222,18 +208,13 @@ func (uc DeckUseCase) Update(id, userId string, isPartial bool, deck *deck.Deck)
 	return result, nil
 }
 
-func (uc DeckUseCase) FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error) {
-	result, err = uc.repo.FindByFilters(filter, userId)
+func (uc DeckUseCase) FindBySearch(filter, userId string, pagination *filter.Pagination) (result []map[string]interface{}, count int64, err error) {
+	result, count, err = uc.repo.FindByFilters(filter, userId, pagination)
 	if err != nil {
 		log.Logger.Errorw("deck not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
 	}
 
-	count, err = uc.repo.Count(userId)
-	if err != nil {
-		log.Logger.Errorw("Count decks error", "Error", err.Error())
-		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
-	}
 	return result, count, nil
 }
 

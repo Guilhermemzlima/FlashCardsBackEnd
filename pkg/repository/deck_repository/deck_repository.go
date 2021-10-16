@@ -2,11 +2,14 @@ package deck_repository
 
 import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/infra/mongodb"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/filter"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/net/context"
 	"os"
 	"time"
@@ -15,12 +18,11 @@ import (
 type IDeckRepository interface {
 	Persist(deckToPersist *deck.Deck) (*deck.Deck, error)
 	FindById(userId string, id *primitive.ObjectID, private bool) (result *deck.Deck, err error)
-	FindByUserIdAndPublic(userId string) (result []*deck.Deck, err error)
-	FindByUserId(userId string) (result []*deck.Deck, err error)
-	Count(userId string) (count int64, err error)
+	FindByUserId(userId string, pagination *filter.Pagination, private bool) (deckResult []*deck.Deck, err error)
+	Count(userId string, private bool) (count int64, err error)
 	Delete(userId string, id *primitive.ObjectID) (result *deck.Deck, err error)
 	Update(id *primitive.ObjectID, userId string, deckToSave *deck.Deck) (*deck.Deck, error)
-	FindByFilters(filter, userId string) (deckResult []map[string]interface{}, err error)
+	FindByFilters(filter, userId string, pagination *filter.Pagination) (deckResult []map[string]interface{}, count int64, err error)
 	FindByIdArray(userId string, ids []*primitive.ObjectID, private bool) (deckResult []*deck.Deck, err error)
 }
 
@@ -125,12 +127,26 @@ func (a DeckRepository) FindByIdArray(userId string, ids []*primitive.ObjectID, 
 	return
 }
 
-func (a DeckRepository) FindByUserId(userId string) (deckResult []*deck.Deck, err error) {
+func (a DeckRepository) FindByUserId(userId string, pagination *filter.Pagination, private bool) (deckResult []*deck.Deck, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	col := a.client.Database(a.database).Collection(a.deckCollection)
-	result, err := col.Find(ctx, bson.M{"userId": userId})
+	findOptions := options.Find()
+	findOptions.SetLimit(pagination.Limit).SetSkip(pagination.Skip)
+	findOptions.SetSort(bson.D{{"createdAt", mongodb.ASC}})
+
+	privateResult := bson.M{}
+	if !private {
+		privateResult = bson.M{"isPrivate": false}
+	}
+
+	query := bson.M{"$or": []interface{}{
+		privateResult,
+		bson.M{"userId": userId},
+	}}
+
+	result, err := col.Find(ctx, query, findOptions)
 
 	if err != nil {
 		log.Logger.Errorw("Find has failed", errorString, err.Error())
@@ -157,39 +173,21 @@ func (a DeckRepository) FindByUserId(userId string) (deckResult []*deck.Deck, er
 	return
 }
 
-func (a DeckRepository) FindByUserIdAndPublic(userId string) (deckResult []*deck.Deck, err error) {
+func (a DeckRepository) Count(userId string, private bool) (count int64, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	col := a.client.Database(a.database).Collection(a.deckCollection)
+	privateResult := bson.M{}
+	if !private {
+		privateResult = bson.M{"isPrivate": false}
+	}
+
 	query := bson.M{"$or": []interface{}{
-		bson.M{"isPrivate": false},
+		privateResult,
 		bson.M{"userId": userId},
 	}}
-	result, err := col.Find(ctx, query)
 
-	if err != nil {
-		log.Logger.Errorw("Find has failed", errorString, err.Error())
-		return nil, errors.Wrap(err, "error trying to find decks")
-	}
-
-	deckResult = make([]*deck.Deck, 0)
-	for result.Next(ctx) {
-		var deckElement *deck.Deck
-		err := result.Decode(&deckElement)
-		if err != nil {
-			log.Logger.Errorw("Parser Deck has failed", "error", err.Error())
-			return nil, errors.Wrap(err, "error trying to parse Deck")
-		}
-		deckResult = append(deckResult, deckElement)
-	}
-	return
-}
-func (a DeckRepository) Count(userId string) (count int64, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	count, err = a.client.Database(a.database).Collection(a.deckCollection).CountDocuments(ctx, bson.M{"userId": userId})
+	count, err = a.client.Database(a.database).Collection(a.deckCollection).CountDocuments(ctx, query)
 	if err != nil {
 		log.Logger.Errorw("Count Decks has failed", "error", err.Error())
 		return 0, errors.Wrap(err, "error trying to count Decks")
@@ -241,9 +239,13 @@ func (a DeckRepository) Update(id *primitive.ObjectID, userId string, deckToSave
 	return deckToSave, nil
 }
 
-func (a DeckRepository) FindByFilters(filter, userId string) (deckResult []map[string]interface{}, err error) {
+func (a DeckRepository) FindByFilters(filter, userId string, pagination *filter.Pagination) (deckResult []map[string]interface{}, count int64, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	findOptions := options.Find()
+	findOptions.SetLimit(pagination.Limit / 2).SetSkip(pagination.Skip)
+	findOptions.SetSort(bson.D{{"lastUpdate", mongodb.DESC}})
 
 	col := a.client.Database(a.database).Collection(a.deckCollection)
 	query := bson.M{"name": bson.M{"$regex": primitive.Regex{
@@ -253,11 +255,17 @@ func (a DeckRepository) FindByFilters(filter, userId string) (deckResult []map[s
 		bson.M{"isPrivate": false},
 		bson.M{"userId": userId},
 	}}
-	result, err := col.Find(ctx, query)
 
+	result, err := col.Find(ctx, query, findOptions)
 	if err != nil {
 		log.Logger.Errorw("Find has failed", errorString, err.Error())
-		return nil, errors.Wrap(err, "error trying to find decks")
+		return nil, 0, errors.Wrap(err, "error trying to find decks")
+	}
+
+	count, err = col.CountDocuments(ctx, query)
+	if err != nil {
+		log.Logger.Errorw("Count Decks has failed", "error", err.Error())
+		return nil, 0, errors.Wrap(err, "error trying to count Decks")
 	}
 
 	deckResult = make([]map[string]interface{}, 0)
@@ -266,7 +274,7 @@ func (a DeckRepository) FindByFilters(filter, userId string) (deckResult []map[s
 		err := result.Decode(&deckElement)
 		if err != nil {
 			log.Logger.Errorw("Parser Deck has failed", "error", err.Error())
-			return nil, errors.Wrap(err, "error trying to parse Deck")
+			return nil, 0, errors.Wrap(err, "error trying to parse Deck")
 		}
 		deckResult = append(deckResult, deckElement)
 	}

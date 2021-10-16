@@ -16,4 +16,5 @@ type Review struct {
 	Mistakes      []*card.Card        `json:"mistakes" bson:"mistakes"`
 	MistakesCount int64               `json:"mistakesCount" bson:"mistakesCount"`
 	LastUpdate    time.Time           `json:"lastUpdate" bson:"lastUpdate"`
+	CreatedAt     time.Time           `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 }
