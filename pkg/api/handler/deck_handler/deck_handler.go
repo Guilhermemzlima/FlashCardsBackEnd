@@ -1,12 +1,12 @@
 package deck_handler
 
 import (
+	"encoding/json"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/render"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -73,6 +73,22 @@ func (handler *DeckHandler) FindByUserIdAndPublic(w http.ResponseWriter, r *http
 	w.Header().Add("X-Total", strconv.FormatInt(count, 10))
 	render.Response(w, result, http.StatusOK)
 }
+
+func (handler *DeckHandler) FindRecent(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get(headerUserId)
+
+	result, count, err := handler.deckUseCase.FindRecent(userID)
+	if err != nil {
+		log.Logger.Errorw("Failed to find deck", "error", err)
+		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
+		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
+		return
+	}
+
+	w.Header().Add("X-Total", strconv.FormatInt(count, 10))
+	render.Response(w, result, http.StatusOK)
+}
+
 func (handler *DeckHandler) FindByUserId(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(headerUserId)
 

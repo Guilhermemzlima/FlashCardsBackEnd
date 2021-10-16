@@ -1,8 +1,8 @@
 package mongodb
 
 import (
-	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"errors"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/net/context"

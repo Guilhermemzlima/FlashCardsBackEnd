@@ -2,11 +2,13 @@ package review_repository
 
 import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/infra/mongodb"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/review"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/net/context"
 	"os"
 	"time"
@@ -15,6 +17,7 @@ import (
 type IReviewRepository interface {
 	Persist(reviewToPersist *review.Review) (*review.Review, error)
 	FindById(userId string, id *primitive.ObjectID, private bool) (reviewReturn *review.Review, err error)
+	FindRecent(originType, userId string) (reviewResult []*review.Review, err error)
 	//FindByDeckId(userId, deckId string, private bool) (reviewReturn []*review.Review, err error)
 	//Update(id *primitive.ObjectID, userId string, reviewToSave *review.Review) (*review.Review, error)
 	//Count(userId string) (count int64, err error)
@@ -81,6 +84,35 @@ func (a ReviewRepository) FindById(userId string, id *primitive.ObjectID, privat
 	}
 
 	return reviewReturn, nil
+}
+
+func (a ReviewRepository) FindRecent(originType, userId string) (reviewResult []*review.Review, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	col := a.client.Database(a.database).Collection(a.reviewCollection)
+	findOptions := options.Find()
+	findOptions.SetLimit(10).SetSkip(0)
+	findOptions.SetSort(bson.D{{"lastUpdate", mongodb.DESC}})
+
+	query := bson.M{"originType": originType, "userId": userId}
+
+	result, err := col.Find(ctx, query, findOptions)
+	if result.Err() != nil {
+		log.Logger.Warn("Find reviewReturn has failed", "Error", result.Err())
+		return nil, errors.Wrap(result.Err(), "error trying to find reviewReturn by id")
+	}
+
+	reviewResult = make([]*review.Review, 0)
+	for result.Next(ctx) {
+		var playlistElement *review.Review
+		err := result.Decode(&playlistElement)
+		if err != nil {
+			log.Logger.Errorw("Parser Playlist has failed", "error", err.Error())
+			return nil, errors.Wrap(err, "error trying to parse Playlist")
+		}
+		reviewResult = append(reviewResult, playlistElement)
+	}
+	return
 }
 
 //func (a ReviewRepository) FindByDeckId(userId, deckId string, private bool) (reviewReturn []*review.Review, err error) {

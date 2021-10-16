@@ -5,6 +5,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/playlist_usecase"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/review_usecase"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/search_usecase"
 	"github.com/google/wire"
 )
 
@@ -24,9 +25,14 @@ var reviewSet = wire.NewSet(
 	review_usecase.NewReviewUseCase,
 	wire.Bind(new(review_usecase.IReviewUseCase), new(review_usecase.ReviewUseCase)))
 
+var searchSet = wire.NewSet(
+	search_usecase.NewSearchUseCase,
+	wire.Bind(new(search_usecase.ISearchUseCase), new(search_usecase.SearchUseCase)))
+
 var Set = wire.NewSet(
 	playlistSet,
 	deckSet,
 	cardSet,
 	reviewSet,
+	searchSet,
 )

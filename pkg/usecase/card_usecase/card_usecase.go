@@ -1,13 +1,13 @@
 package card_usecase
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/card"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/card_repository"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
-	"encoding/json"
-	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/imdario/mergo"
 	"go.mongodb.org/mongo-driver/bson/primitive"

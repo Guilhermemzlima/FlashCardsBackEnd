@@ -1,12 +1,12 @@
 package review_handler
 
 import (
+	"encoding/json"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/api/render"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/card"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/review_usecase"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 )

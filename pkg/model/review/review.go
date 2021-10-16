@@ -15,5 +15,5 @@ type Review struct {
 	HistsCount    int64               `json:"histsCount" bson:"histsCount"`
 	Mistakes      []*card.Card        `json:"mistakes" bson:"mistakes"`
 	MistakesCount int64               `json:"mistakesCount" bson:"mistakesCount"`
-	LastUpdate    time.Time           `json:"lastUpdate,omitempty" bson:"lastUpdate,omitempty"`
+	LastUpdate    time.Time           `json:"lastUpdate" bson:"lastUpdate"`
 }

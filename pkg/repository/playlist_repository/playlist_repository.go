@@ -1,9 +1,9 @@
 package playlist_repository
 
 import (
+	"context"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/playlist"
-	"context"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -20,6 +20,7 @@ type IPlaylistRepository interface {
 	Count(userId string) (count int64, err error)
 	Delete(userId string, id *primitive.ObjectID) (result *playlist.Playlist, err error)
 	Update(id *primitive.ObjectID, userId string, playlistToSave *playlist.Playlist) (*playlist.Playlist, error)
+	FindFilter(filter, userId string) (playlistResult []map[string]interface{}, err error)
 }
 
 type PlaylistRepository struct {
@@ -198,4 +199,70 @@ func (a PlaylistRepository) Update(id *primitive.ObjectID, userId string, playli
 	}
 	playlist.Id = id
 	return playlist, nil
+}
+
+//func (a PlaylistRepository) FindFilter(filter, userId string) (playlistResult []*playlist.Playlist, err error) {
+//	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+//	defer cancel()
+//	result, err := a.client.Database(a.database).Collection(a.playlistCollection).Find(ctx, bson.M{"name": bson.M{"$regex": primitive.Regex{
+//		Pattern: "/.*" + filter + ".*/",
+//		Options: "i",
+//	}},
+//		"$or": []interface{}{
+//			bson.M{"isPrivate": false},
+//			bson.M{"userId": userId},
+//		},
+//	})
+//
+//	if err != nil {
+//		log.Logger.Errorw("Find has failed", errorString, err.Error())
+//		return nil, errors.Wrap(err, "error trying to find playlists")
+//	}
+//
+//	playlistResult = make([]*playlist.Playlist, 0)
+//	for result.Next(ctx) {
+//		var playlistElement *playlist.Playlist
+//		err := result.Decode(&playlistElement)
+//		if err != nil {
+//			log.Logger.Errorw("Parser Playlist has failed", "error", err.Error())
+//			return nil, errors.Wrap(err, "error trying to parse Playlist")
+//		}
+//		playlistResult = append(playlistResult, playlistElement)
+//	}
+//	return
+//}
+
+func (a PlaylistRepository) FindFilter(filter, userId string) (playlistResult []map[string]interface{}, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	col := a.client.Database(a.database).Collection(a.playlistCollection)
+
+	query := bson.M{"name": bson.M{"$regex": primitive.Regex{
+		Pattern: ".*" + filter + ".*",
+		Options: "i",
+	}},
+		"$or": []interface{}{
+			bson.M{"isPrivate": false},
+			bson.M{"userId": userId},
+		}}
+
+	result, err := col.Find(ctx, query)
+
+	if err != nil {
+		log.Logger.Errorw("Find has failed", errorString, err.Error())
+		return nil, errors.Wrap(err, "error trying to find playlists")
+	}
+
+	playlistResult = make([]map[string]interface{}, 0)
+	for result.Next(ctx) {
+		var playlistElement map[string]interface{}
+		err := result.Decode(&playlistElement)
+		if err != nil {
+			log.Logger.Errorw("Parser Playlist has failed", "error", err.Error())
+			return nil, errors.Wrap(err, "error trying to parse Playlist")
+		}
+		playlistResult = append(playlistResult, playlistElement)
+	}
+	return
 }
