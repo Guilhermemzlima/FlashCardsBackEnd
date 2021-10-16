@@ -6,6 +6,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/config/log"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/internal/errors"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/card"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/card_repository"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/usecase/deck_usecase"
 	"github.com/go-playground/validator"
@@ -47,16 +48,16 @@ func (uc CardUseCase) Create(userId, deckId string, card *card.Card) (result *ca
 		return nil, &errors.InvalidPayload{Err: err}
 	}
 
+	_, err = uc.addCouterDeck(userId, deckId)
+	if err != nil {
+		log.Logger.Errorw("deck update error", "Error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
 	result, err = uc.repo.Persist(card)
 	if err != nil {
 		log.Logger.Errorw("Card creation error", "Error", err.Error())
 		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
 	}
-
-	//_, err = uc.deckUseCase.AddDeckToPlaylist(deckId, userId, result)
-	//if err != nil {
-	//	return nil, err
-	//}
 
 	return result, nil
 }
@@ -185,4 +186,18 @@ func (uc CardUseCase) Update(id, userId string, isPartial bool, card *card.Card)
 	}
 
 	return result, nil
+}
+
+func (uc CardUseCase) addCouterDeck(userId, deckId string) (result *deck.Deck, err error) {
+	deckFound, err := uc.deckUseCase.FindById(userId, deckId)
+	if err != nil {
+		return nil, err
+	}
+	deckFound.CardsCount += 1
+
+	result, err = uc.deckUseCase.Update(deckId, userId, false, deckFound)
+	if err != nil {
+		return nil, err
+	}
+	return
 }
