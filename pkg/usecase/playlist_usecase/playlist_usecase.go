@@ -25,6 +25,7 @@ type IPlaylistUseCase interface {
 	AddDeckToPlaylist(id, userId string, deckId string) (*playlist.Playlist, error)
 	FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error)
 	FindDecksOnPlaylist(userId, playlistId string) (result []*deck.Deck, err error)
+	RemoveDeckFromPlaylist(id, userId string, deckId string) (*playlist.Playlist, error)
 }
 type PlaylistUseCase struct {
 	validator   *validator.Validate
@@ -227,6 +228,33 @@ func (uc PlaylistUseCase) AddDeckToPlaylist(id, userId string, deckId string) (*
 	savedPlaylist.Decks = append(savedPlaylist.Decks, deckId)
 
 	result, err := uc.Update(id, userId, true, savedPlaylist)
+	if err != nil {
+		log.Logger.Errorw("update error", "error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
+
+	if result == nil {
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, fmt.Sprintf("id %s not found", id))
+	}
+
+	return result, nil
+}
+
+func (uc PlaylistUseCase) RemoveDeckFromPlaylist(id, userId string, deckId string) (*playlist.Playlist, error) {
+	savedPlaylist, err := uc.FindById(userId, id)
+	if err != nil {
+		log.Logger.Errorw("playlist not found", "error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+
+	for i, v := range savedPlaylist.Decks {
+		if v == deckId {
+			savedPlaylist.Decks = append(savedPlaylist.Decks[:i], savedPlaylist.Decks[i+1:]...)
+			break
+		}
+	}
+
+	result, err := uc.Update(id, userId, false, savedPlaylist)
 	if err != nil {
 		log.Logger.Errorw("update error", "error", err.Error())
 		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())

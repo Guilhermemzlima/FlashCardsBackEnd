@@ -149,8 +149,23 @@ func (handler *PlaylistHandler) extractBody(r *http.Request) (*playlist.Playlist
 func (handler *PlaylistHandler) PatchDeck(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)[pathVarID]
 	userID := r.Header.Get(headerUserId)
-	deckId := r.Header.Get("deckId")
-	result, err := handler.playlistUseCase.AddDeckToPlaylist(id, userID, deckId)
+	requestBody, err := handler.extractBody(r)
+	result, err := handler.playlistUseCase.AddDeckToPlaylist(id, userID, requestBody.Id.Hex())
+	if err != nil {
+		log.Logger.Errorw("Failed to update playlist", "error", err)
+		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
+		return
+	}
+
+	log.Logger.Debug("Playlist has updated successfully")
+	render.Response(w, result, http.StatusCreated)
+}
+
+func (handler *PlaylistHandler) RemoveDeckFromPlaylist(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)[pathVarID]
+	userID := r.Header.Get(headerUserId)
+	requestBody, err := handler.extractBody(r)
+	result, err := handler.playlistUseCase.RemoveDeckFromPlaylist(id, userID, requestBody.Id.Hex())
 	if err != nil {
 		log.Logger.Errorw("Failed to update playlist", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
