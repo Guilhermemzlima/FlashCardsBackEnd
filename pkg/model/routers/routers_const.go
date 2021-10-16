@@ -10,6 +10,7 @@ const (
 	PlaylistReviewPath = PlaylistPathId + "/review"
 	PlaylistRecentPath = PlaylistPathId + "/recent"
 	PlaylistPathAdd    = PlaylistPathId + "/deck/add"
+	PlaylistFindDecks    = PlaylistPathId + "/deck"
 
 	DeckPath       = ApiPath + "/decks"
 	DeckPathId     = DeckPath + "/{id}"

@@ -31,6 +31,7 @@ func (sys *SystemRoutes) SetupHandler() http.Handler {
 	r.HandleFunc(routers.PlaylistPathId, sys.playlistHandler.Delete).Methods(http.MethodDelete)
 	r.HandleFunc(routers.PlaylistPathId, sys.playlistHandler.Patch).Methods(http.MethodPatch)
 	r.HandleFunc(routers.PlaylistPathAdd, sys.playlistHandler.PatchDeck).Methods(http.MethodPatch)
+	r.HandleFunc(routers.PlaylistFindDecks, sys.playlistHandler.FindDecksByPlaylistId).Methods(http.MethodGet)
 
 	r.HandleFunc(routers.DeckPath, sys.deckHandler.Post).Methods(http.MethodPost)
 	r.HandleFunc(routers.DeckPathAll, sys.deckHandler.FindByUserIdAndPublic).Methods(http.MethodGet)

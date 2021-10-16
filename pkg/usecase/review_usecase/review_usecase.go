@@ -19,7 +19,7 @@ type IReviewUseCase interface {
 	ReviewPlaylists(id, userId string) (map[string]interface{}, error)
 	ReviewDecks(id, userId string) (map[string]interface{}, error)
 	FindById(userId, id string) (result *review.Review, err error)
-	AddCardResult(sessionId, userId string, card *card.Card, isRight bool) (*review.Review, error)
+	AddCardResult(sessionId, userId, cardId string, isRight bool) (*review.Review, error)
 	FindRecentDecks(userId string) (result []*review.Review, err error)
 }
 
@@ -47,7 +47,7 @@ func (uc ReviewUseCase) ReviewPlaylists(id, userId string) (map[string]interface
 	var list []*card.Card
 
 	for _, element := range playlistToReview.Decks {
-		cards, err := uc.cardUseCase.FindByDeckId(userId, element.Id)
+		cards, err := uc.cardUseCase.FindByDeckId(userId, element)
 		if err != nil {
 			log.Logger.Errorw("error to find cards by deckId", "error", err.Error())
 			return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
@@ -107,7 +107,8 @@ func (uc ReviewUseCase) ReviewDecks(id, userId string) (map[string]interface{}, 
 	}, nil
 }
 
-func (uc ReviewUseCase) AddCardResult(sessionId, userId string, card *card.Card, isRight bool) (*review.Review, error) {
+func (uc ReviewUseCase) AddCardResult(sessionId, userId, cardId string, isRight bool) (*review.Review, error) {
+	cardFound, err := uc.cardUseCase.FindById(userId, cardId)
 	savedReview, err := uc.FindById(userId, sessionId)
 	if err != nil {
 		log.Logger.Errorw("review not found", "error", err.Error())
@@ -115,11 +116,11 @@ func (uc ReviewUseCase) AddCardResult(sessionId, userId string, card *card.Card,
 	}
 	savedReview.LastUpdate = time.Now()
 	if isRight {
-		savedReview.Hists = append(savedReview.Hists, card)
+		savedReview.Hists = append(savedReview.Hists, cardFound)
 		savedReview.HistsCount += 1
 	}
 	if isRight == false {
-		savedReview.Mistakes = append(savedReview.Hists, card)
+		savedReview.Mistakes = append(savedReview.Mistakes, cardFound)
 		savedReview.MistakesCount += 1
 	}
 	id, err := uc.parseToObjectID(sessionId)

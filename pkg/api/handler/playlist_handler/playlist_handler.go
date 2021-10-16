@@ -72,6 +72,20 @@ func (handler *PlaylistHandler) FindByUserIdAndPublic(w http.ResponseWriter, r *
 	w.Header().Add("X-Total", strconv.FormatInt(count, 10))
 	render.Response(w, result, http.StatusOK)
 }
+
+func (handler *PlaylistHandler) FindDecksByPlaylistId(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get(headerUserId)
+	id := mux.Vars(r)[pathVarID]
+	result, err := handler.playlistUseCase.FindDecksOnPlaylist(userID, id)
+	if err != nil {
+		log.Logger.Errorw("Failed to find playlist", "error", err)
+		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
+		return
+	}
+
+	render.Response(w, result, http.StatusOK)
+}
+
 func (handler *PlaylistHandler) FindByUserId(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(headerUserId)
 

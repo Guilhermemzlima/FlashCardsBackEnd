@@ -21,6 +21,7 @@ type IDeckRepository interface {
 	Delete(userId string, id *primitive.ObjectID) (result *deck.Deck, err error)
 	Update(id *primitive.ObjectID, userId string, deckToSave *deck.Deck) (*deck.Deck, error)
 	FindByFilters(filter, userId string) (deckResult []map[string]interface{}, err error)
+	FindByIdArray(userId string, ids []*primitive.ObjectID, private bool) (deckResult []*deck.Deck, err error)
 }
 
 type DeckRepository struct {
@@ -83,6 +84,45 @@ func (a DeckRepository) FindById(userId string, id *primitive.ObjectID, private 
 	}
 
 	return deckReturn, nil
+}
+
+func (a DeckRepository) FindByIdArray(userId string, ids []*primitive.ObjectID, private bool) (deckResult []*deck.Deck, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	privateResult := bson.M{}
+	if !private {
+		privateResult = bson.M{"isPrivate": false}
+	}
+
+	col := a.client.Database(a.database).Collection(a.deckCollection)
+
+	query := bson.M{"_id": bson.M{"$in": ids}, "$or": []interface{}{
+		privateResult,
+		bson.M{"userId": userId},
+	}}
+	result, err := col.Find(ctx, query)
+	if result.Err() != nil {
+		log.Logger.Warn("Find deckReturn by id has failed", "Error", result.Err())
+		return nil, errors.Wrap(result.Err(), "error trying to find deckReturn by id")
+	}
+	deckResult = make([]*deck.Deck, 0)
+	for result.Next(ctx) {
+		var deckElement *deck.Deck
+		err := result.Decode(&deckElement)
+		if err != nil {
+			log.Logger.Errorw("Parser Deck has failed", "error", err.Error())
+			return nil, errors.Wrap(err, "error trying to parse Deck")
+		}
+		deckResult = append(deckResult, deckElement)
+	}
+
+	err = result.Close(ctx)
+	if err != nil {
+		log.Logger.Errorw("Error closing context...", "Error", err.Error())
+		return nil, errors.Wrap(err, "error trying to find decks")
+	}
+
+	return
 }
 
 func (a DeckRepository) FindByUserId(userId string) (deckResult []*deck.Deck, err error) {

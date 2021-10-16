@@ -24,6 +24,7 @@ type IPlaylistUseCase interface {
 	Update(id, userId string, isPartial bool, playlist *playlist.Playlist) (*playlist.Playlist, error)
 	AddDeckToPlaylist(id, userId string, deckId string) (*playlist.Playlist, error)
 	FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error)
+	FindDecksOnPlaylist(userId, playlistId string) (result []*deck.Deck, err error)
 }
 type PlaylistUseCase struct {
 	validator   *validator.Validate
@@ -102,6 +103,21 @@ func (uc PlaylistUseCase) FindByUserIdAndPublic(userId string) (result []*playli
 		return nil, 0, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
 	}
 	return result, count, nil
+}
+
+func (uc PlaylistUseCase) FindDecksOnPlaylist(userId, playlistId string) (result []*deck.Deck, err error) {
+	playlistResult, err := uc.FindById(userId, playlistId)
+	if err != nil {
+		log.Logger.Errorw("playlist not found", "Error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+	savedDeck, err := uc.deckUseCase.FindByIdArray(userId, playlistResult.Decks)
+	if err != nil {
+		log.Logger.Errorw("decks not found", "Error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+	return savedDeck, err
+
 }
 
 func (uc PlaylistUseCase) FindBySearch(filter, userId string) (result []map[string]interface{}, count int64, err error) {
@@ -192,27 +208,14 @@ func (uc PlaylistUseCase) Update(id, userId string, isPartial bool, playlist *pl
 }
 
 func (uc PlaylistUseCase) AddDeckToPlaylist(id, userId string, deckId string) (*playlist.Playlist, error) {
-	var preview deck.DeckPreview
 	savedDeck, err := uc.deckUseCase.FindById(userId, deckId)
 	if err != nil {
 		log.Logger.Errorw("playlistToSave not found", "error", err.Error())
 		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
 	}
-
-	if savedDeck != nil {
-		preview = deck.DeckPreview{
-			Id:       savedDeck.Id.Hex(),
-			ImageURL: savedDeck.ImageURL,
-			Name:     savedDeck.Name,
-			UserId:   savedDeck.UserId,
-		}
-	}
-
-	err = uc.validator.Struct(preview)
-	if err != nil {
-		playlistBytes, _ := json.Marshal(preview)
-		log.Logger.Errorf("Error to validate input:\n %v;\n error: %v", string(playlistBytes), err.Error())
-		return nil, &errors.InvalidPayload{Err: err}
+	if savedDeck == nil {
+		log.Logger.Errorw("error to add deck to playlist, deck not found", "error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
 	}
 
 	savedPlaylist, err := uc.FindById(userId, id)
@@ -221,7 +224,7 @@ func (uc PlaylistUseCase) AddDeckToPlaylist(id, userId string, deckId string) (*
 		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
 	}
 
-	savedPlaylist.Decks = append(savedPlaylist.Decks, preview)
+	savedPlaylist.Decks = append(savedPlaylist.Decks, deckId)
 
 	result, err := uc.Update(id, userId, true, savedPlaylist)
 	if err != nil {

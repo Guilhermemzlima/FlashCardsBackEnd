@@ -74,6 +74,24 @@ func (uc DeckUseCase) FindById(userId, id string) (result *deck.Deck, err error)
 	return result, nil
 }
 
+func (uc DeckUseCase) FindByIdArray(userId string, ids []string) (result []*deck.Deck, err error) {
+	var idsPrimitive []*primitive.ObjectID
+	for _, element := range ids {
+		objectID, err := uc.parseToObjectID(element)
+		if err != nil {
+			return nil, err
+		}
+		idsPrimitive = append(idsPrimitive, &objectID)
+	}
+
+	result, err = uc.repo.FindByIdArray(userId, idsPrimitive, false)
+	if err != nil {
+		log.Logger.Errorw("deck not found", "Error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
+	}
+	return result, nil
+}
+
 func (uc DeckUseCase) FindByUserId(userId string) (result []*deck.Deck, count int64, err error) {
 	result, err = uc.repo.FindByUserId(userId)
 	if err != nil {

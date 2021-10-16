@@ -45,7 +45,7 @@ func (handler *ReviewHandler) ReviewDeck(w http.ResponseWriter, r *http.Request)
 
 	result, err := handler.reviewUseCase.ReviewDecks(id, userID)
 	if err != nil {
-		log.Logger.Errorw("Failed to review playlist", "error", err)
+		log.Logger.Errorw("Failed to review deck", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
 		return
 	}
@@ -59,7 +59,7 @@ func (handler *ReviewHandler) CardResultRight(w http.ResponseWriter, r *http.Req
 	requestBody, err := handler.extractBody(r)
 	userID := r.Header.Get(headerUserId)
 
-	result, err := handler.reviewUseCase.AddCardResult(id, userID, requestBody, true)
+	result, err := handler.reviewUseCase.AddCardResult(id, userID, requestBody.Id.Hex(), true)
 	if err != nil {
 		log.Logger.Errorw("Failed to review playlist", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
@@ -74,7 +74,7 @@ func (handler *ReviewHandler) CardResultWrong(w http.ResponseWriter, r *http.Req
 	requestBody, err := handler.extractBody(r)
 	userID := r.Header.Get(headerUserId)
 
-	result, err := handler.reviewUseCase.AddCardResult(id, userID, requestBody, false)
+	result, err := handler.reviewUseCase.AddCardResult(id, userID, requestBody.Id.Hex(), false)
 	if err != nil {
 		log.Logger.Errorw("Failed to review playlist", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
