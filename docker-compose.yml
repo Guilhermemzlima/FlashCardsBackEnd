@@ -13,6 +13,23 @@ services:
       - $HOME/dev/volumes/mongo/data
     networks:
       - developer-network
+  flashcards-backend:
+    image: flashcardsbackend:latest
+    container_name: flashcards-backend
+    environment:
+      MONGODB_ADDRESS: "mongodb://mongo-dev-flashcards:27017/admin"
+      MONGODB_USERNAME: "root"
+      MONGODB_PASSWORD: "123123"
+      MONGODB_DATABASE: "flashcards"
+      MONGODB_PLAYLIST_COLLECTION: "playlists"
+      MONGODB_DECK_COLLECTION: "decks"
+      MONGODB_REVIEW_COLLECTION: "reviews"
+      ENV: "development"
+      LOG_LEVEL: "DEBUG"
+    ports:
+      - "8080:8080"
+    networks:
+      - developer-network
 
 networks:
   developer-network:
