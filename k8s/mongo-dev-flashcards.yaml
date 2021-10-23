@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-dev-flashcards
+spec:
+  template:
+    metadata:
+      name: mongo-dev-flashcards
+      labels:
+        app: mongo-dev-flashcards
+    spec:
+      containers:
+        - name: mongo-dev-flashcards
+          image: mongo:latest
+          ports:
+            - containerPort: 27017:27017
+          envFrom:
+            - configMapRef:
+                name: mongo-dev-flashcards-configmap.yaml
+  selector:
+    matchLabels:
+      app: db-noticias
