@@ -14,7 +14,7 @@ services:
     networks:
       - developer-network
   flashcards-backend:
-    image: flashcardsbackend:latest
+    image: guilhermemzlima/flashcardsbackend:latest
     container_name: flashcards-backend
     environment:
       MONGODB_ADDRESS: "mongodb://mongo-dev-flashcards:27017/admin"
