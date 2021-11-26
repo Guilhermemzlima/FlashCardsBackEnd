@@ -9,6 +9,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/joho/godotenv v1.4.0
 	github.com/pkg/errors v0.9.1
+	github.com/rs/cors v1.8.0
 	github.com/stretchr/testify v1.7.0
 	github.com/testcontainers/testcontainers-go v0.11.1
 	go.mongodb.org/mongo-driver v1.7.3
