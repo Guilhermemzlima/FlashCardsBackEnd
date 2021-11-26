@@ -18,7 +18,7 @@ import (
 type IDeckRepository interface {
 	Persist(deckToPersist *deck.Deck) (*deck.Deck, error)
 	FindById(userId string, id *primitive.ObjectID, private bool) (result *deck.Deck, err error)
-	FindByUserId(userId string, pagination *filter.Pagination, private bool) (deckResult []*deck.Deck, err error)
+	FindByUserId(filter,userId string, pagination *filter.Pagination, private bool) (deckResult []*deck.Deck, err error)
 	Count(userId string, private bool) (count int64, err error)
 	Delete(userId string, id *primitive.ObjectID) (result *deck.Deck, err error)
 	Update(id *primitive.ObjectID, userId string, deckToSave *deck.Deck) (*deck.Deck, error)
@@ -127,7 +127,7 @@ func (a DeckRepository) FindByIdArray(userId string, ids []*primitive.ObjectID, 
 	return
 }
 
-func (a DeckRepository) FindByUserId(userId string, pagination *filter.Pagination, private bool) (deckResult []*deck.Deck, err error) {
+func (a DeckRepository) FindByUserId(filter, userId string, pagination *filter.Pagination, private bool) (deckResult []*deck.Deck, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -141,13 +141,15 @@ func (a DeckRepository) FindByUserId(userId string, pagination *filter.Paginatio
 		privateResult = bson.M{"isPrivate": false}
 	}
 
-	query := bson.M{"$or": []interface{}{
+	query := bson.M{"name": bson.M{"$regex": primitive.Regex{
+		Pattern: ".*" + filter + ".*",
+		Options: "i",
+	}}, "$or": []interface{}{
 		privateResult,
 		bson.M{"userId": userId},
 	}}
 
 	result, err := col.Find(ctx, query, findOptions)
-
 	if err != nil {
 		log.Logger.Errorw("Find has failed", errorString, err.Error())
 		return nil, errors.Wrap(err, "error trying to find deck")

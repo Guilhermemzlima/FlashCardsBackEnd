@@ -64,8 +64,9 @@ func (handler *DeckHandler) FindByUserIdAndPublic(w http.ResponseWriter, r *http
 	userID := r.Header.Get(headerUserId)
 
 	pagination := handler.buildPagination(r)
+	filterString := r.URL.Query().Get("filter")
 
-	result, count, err := handler.deckUseCase.FindByUserId(userID, pagination, false)
+	result, count, err := handler.deckUseCase.FindByUserId(filterString, userID, pagination, false)
 	if err != nil {
 		log.Logger.Errorw("Failed to find deck", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))
@@ -97,7 +98,9 @@ func (handler *DeckHandler) FindRecent(w http.ResponseWriter, r *http.Request) {
 func (handler *DeckHandler) FindByUserId(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(headerUserId)
 	pagination := handler.buildPagination(r)
-	result, count, err := handler.deckUseCase.FindByUserId(userID, pagination, true)
+	filterString := r.URL.Query().Get("filter")
+
+	result, count, err := handler.deckUseCase.FindByUserId(filterString, userID, pagination, true)
 	if err != nil {
 		log.Logger.Errorw("Failed to find deck", "error", err)
 		render.ResponseError(w, err, GenerateHTTPErrorStatusCode(err))

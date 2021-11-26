@@ -19,7 +19,7 @@ import (
 type IDeckUseCase interface {
 	Create(userId string, deck *deck.Deck) (result *deck.Deck, err error)
 	FindById(userId, id string) (result *deck.Deck, err error)
-	FindByUserId(userId string, pagination *filter.Pagination, private bool) (result []*deck.Deck, count int64, err error)
+	FindByUserId(filter, userId string, pagination *filter.Pagination, private bool) (result []*deck.Deck, count int64, err error)
 	Delete(id, userId string) (result *deck.Deck, err error)
 	Update(id, userId string, isPartial bool, deck *deck.Deck) (*deck.Deck, error)
 	FindBySearch(filter, userId string, pagination *filter.Pagination) (result []map[string]interface{}, count int64, err error)
@@ -93,8 +93,8 @@ func (uc DeckUseCase) FindByIdArray(userId string, ids []string) (result []*deck
 	return result, nil
 }
 
-func (uc DeckUseCase) FindByUserId(userId string, pagination *filter.Pagination, private bool) (result []*deck.Deck, count int64, err error) {
-	result, err = uc.repo.FindByUserId(userId, pagination, private)
+func (uc DeckUseCase) FindByUserId(filter, userId string, pagination *filter.Pagination, private bool) (result []*deck.Deck, count int64, err error) {
+	result, err = uc.repo.FindByUserId(filter, userId, pagination, private)
 	if err != nil {
 		log.Logger.Errorw("deck not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
