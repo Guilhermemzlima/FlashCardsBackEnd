@@ -18,7 +18,7 @@ import (
 type IDeckRepository interface {
 	Persist(deckToPersist *deck.Deck) (*deck.Deck, error)
 	FindById(userId string, id *primitive.ObjectID, private bool) (result *deck.Deck, err error)
-	FindByUserId(filter,userId string, pagination *filter.Pagination, private bool) (deckResult []*deck.Deck, err error)
+	FindByUserId(filter, userId string, pagination *filter.Pagination, private bool, orderBy string, order string) (deckResult []*deck.Deck, err error)
 	Count(userId string, private bool) (count int64, err error)
 	Delete(userId string, id *primitive.ObjectID) (result *deck.Deck, err error)
 	Update(id *primitive.ObjectID, userId string, deckToSave *deck.Deck) (*deck.Deck, error)
@@ -127,14 +127,21 @@ func (a DeckRepository) FindByIdArray(userId string, ids []*primitive.ObjectID, 
 	return
 }
 
-func (a DeckRepository) FindByUserId(filter, userId string, pagination *filter.Pagination, private bool) (deckResult []*deck.Deck, err error) {
+func (a DeckRepository) FindByUserId(filter, userId string, pagination *filter.Pagination, private bool, orderBy string, order string) (deckResult []*deck.Deck, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	var mongodbCount int64
+	if order == "ASC"{
+		mongodbCount = mongodb.ASC
+	}
+	if order == "DESC"{
+		mongodbCount = mongodb.DESC
+	}
 
 	col := a.client.Database(a.database).Collection(a.deckCollection)
 	findOptions := options.Find()
 	findOptions.SetLimit(pagination.Limit).SetSkip(pagination.Skip)
-	findOptions.SetSort(bson.D{{"createdAt", mongodb.ASC}})
+	findOptions.SetSort(bson.D{{orderBy, mongodbCount}})
 
 	privateResult := bson.M{}
 	if !private {

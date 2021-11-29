@@ -13,6 +13,7 @@ type Deck struct {
 	IsPrivate        bool                `json:"isPrivate" bson:"isPrivate"`
 	StudySuggestions []string            `json:"studySuggestions" bson:"studySuggestions"`
 	CardsCount       int64               `json:"cardsCount" bson:"cardsCount"`
+	PlayCount        int64               `json:"playCount" bson:"playCount"`
 	UserId           string              `json:"userId" bson:"userId"`
 	LastUpdate       time.Time           `json:"lastUpdate,omitempty" bson:"lastUpdate,omitempty"`
 	CreatedAt        time.Time           `json:"createdAt,omitempty" bson:"createdAt,omitempty"`

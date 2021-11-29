@@ -19,11 +19,12 @@ import (
 type IDeckUseCase interface {
 	Create(userId string, deck *deck.Deck) (result *deck.Deck, err error)
 	FindById(userId, id string) (result *deck.Deck, err error)
-	FindByUserId(filter, userId string, pagination *filter.Pagination, private bool) (result []*deck.Deck, count int64, err error)
+	FindByUserId(filter, userId string, pagination *filter.Pagination, private bool, orderBy string, order string) (result []*deck.Deck, count int64, err error)
 	Delete(id, userId string) (result *deck.Deck, err error)
 	Update(id, userId string, isPartial bool, deck *deck.Deck) (*deck.Deck, error)
 	FindBySearch(filter, userId string, pagination *filter.Pagination) (result []map[string]interface{}, count int64, err error)
 	FindRecent(userId string, pagination *filter.Pagination) (result []*deck.Deck, count int64, err error)
+	AddCounterPlayDeck(id, userId string, savedDeck *deck.Deck) (deckReturn *deck.Deck, err error)
 }
 type DeckUseCase struct {
 	validator  *validator.Validate
@@ -93,8 +94,14 @@ func (uc DeckUseCase) FindByIdArray(userId string, ids []string) (result []*deck
 	return result, nil
 }
 
-func (uc DeckUseCase) FindByUserId(filter, userId string, pagination *filter.Pagination, private bool) (result []*deck.Deck, count int64, err error) {
-	result, err = uc.repo.FindByUserId(filter, userId, pagination, private)
+func (uc DeckUseCase) FindByUserId(filter, userId string, pagination *filter.Pagination, private bool, orderBy string, order string) (result []*deck.Deck, count int64, err error) {
+	if orderBy == "" {
+		orderBy = "createdAt"
+	}
+	if order == "" {
+		order = "DESC"
+	}
+	result, err = uc.repo.FindByUserId(filter, userId, pagination, private, orderBy, order)
 	if err != nil {
 		log.Logger.Errorw("deck not found", "Error", err.Error())
 		return nil, 0, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
@@ -218,26 +225,12 @@ func (uc DeckUseCase) FindBySearch(filter, userId string, pagination *filter.Pag
 	return result, count, nil
 }
 
-//func (uc DeckUseCase) AddDeckToPlaylist(id, userId string, card *card.Card) (*deck.Deck, error) {
-//
-//	savedDeck, err := uc.FindById(userId, id)
-//	if err != nil {
-//		log.Logger.Errorw("playlist not found", "error", err.Error())
-//		return nil, errors.WrapWithMessage(errors.ErrNotFound, err.Error())
-//	}
-//
-//	savedDeck.Cards = append(savedDeck.Cards, card)
-//	savedDeck.CardsCount += 1
-//
-//	result, err := uc.Update(id, userId, true, savedDeck)
-//	if err != nil {
-//		log.Logger.Errorw("update error", "error", err.Error())
-//		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
-//	}
-//
-//	if result == nil {
-//		return nil, errors.WrapWithMessage(errors.ErrNotFound, fmt.Sprintf("id %s not found", id))
-//	}
-//
-//	return result, nil
-//}
+func (uc DeckUseCase) AddCounterPlayDeck(id, userId string, savedDeck *deck.Deck) (deckReturn *deck.Deck, err error) {
+	savedDeck.PlayCount = savedDeck.PlayCount + 1
+	deckReturn, err = uc.Update(id, userId, false, savedDeck)
+	if err != nil {
+		log.Logger.Errorw("update error", "error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
+	return
+}

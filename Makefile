@@ -16,4 +16,4 @@ build:
 
 
 image:
-	docker build -t flashcardsbackend:latest .
+	docker build -t guilhermemzlima/flashcardsbackend:latest .

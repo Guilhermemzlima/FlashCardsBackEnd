@@ -81,6 +81,12 @@ func (uc ReviewUseCase) ReviewDecks(id, userId string) (map[string]interface{}, 
 	}
 	var list []*card.Card
 
+	_,err = uc.deckUseCase.AddCounterPlayDeck(id,userId,deck)
+	if err != nil {
+		log.Logger.Errorw("error to find cards by deckId", "error", err.Error())
+		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
+	}
+
 	cards, err := uc.cardUseCase.FindByDeckId(userId, deck.Id.Hex())
 	if err != nil {
 		log.Logger.Errorw("error to find cards by deckId", "error", err.Error())
