@@ -102,8 +102,8 @@ func (handler *DeckHandler) FindByUserId(w http.ResponseWriter, r *http.Request)
 	pagination := handler.buildPagination(r)
 	filterString := r.URL.Query().Get("filter")
 
-	orderByString := r.URL.Query().Get("orderBy")
-	orderString := r.URL.Query().Get("order")
+	orderByString := r.URL.Query().Get("field")
+	orderString := r.URL.Query().Get("sort")
 
 	result, count, err := handler.deckUseCase.FindByUserId(filterString, userID, pagination, true, orderByString, orderString)
 	if err != nil {
