@@ -8,6 +8,7 @@ import (
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/Enums"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/deck"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/filter"
+	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/model/review"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/deck_repository"
 	"github.com/Guilhermemzlima/FlashCardsBackEnd/pkg/repository/review_repository"
 	"github.com/go-playground/validator"
@@ -119,7 +120,14 @@ func (uc DeckUseCase) FindByUserId(filter, userId string, pagination *filter.Pag
 func (uc DeckUseCase) FindRecent(userId string, pagination *filter.Pagination) (result []*deck.Deck, count int64, err error) {
 	reviews, err := uc.reviewRepo.FindRecent(Enums.Deck, pagination, userId)
 
-	for _, s := range reviews {
+	var list []*review.Review
+	for _, item := range reviews {
+		if contains(list, item) == false {
+			list = append(list, item)
+		}
+	}
+
+	for _, s := range list {
 		objectID, err := uc.parseToObjectID(s.OriginId)
 		if err != nil {
 			return nil, 0, err
@@ -233,4 +241,13 @@ func (uc DeckUseCase) AddCounterPlayDeck(id, userId string, savedDeck *deck.Deck
 		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
 	}
 	return
+}
+
+func contains(s []*review.Review, e *review.Review) bool {
+	for _, a := range s {
+		if a.OriginId == e.OriginId {
+			return true
+		}
+	}
+	return false
 }

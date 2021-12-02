@@ -92,7 +92,7 @@ func (a ReviewRepository) FindRecent(originType string, pagination *filter.Pagin
 	defer cancel()
 	col := a.client.Database(a.database).Collection(a.reviewCollection)
 	findOptions := options.Find()
-	findOptions.SetLimit(pagination.Limit).SetSkip(pagination.Skip)
+	findOptions.SetLimit(30).SetSkip(pagination.Skip)
 	findOptions.SetSort(bson.D{{"lastUpdate", mongodb.DESC}})
 
 	query := bson.M{"originType": originType, "userId": userId}
