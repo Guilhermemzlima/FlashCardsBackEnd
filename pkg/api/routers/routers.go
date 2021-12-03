@@ -92,7 +92,7 @@ func configCORS() *cors.Cors {
 		Debug:              false,
 	})
 
-	log.Logger.Debug("Cors handler with routes created successfully")
+	log.Logger.Debug("Cors handler with routes created successfully att aqui ")
 	return c
 }
 

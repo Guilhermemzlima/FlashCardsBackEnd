@@ -101,6 +101,9 @@ func (a PlaylistRepository) FindByUserId(userId string, pagination *filter.Pagin
 		query = bson.M{
 			"userId": userId,
 		}
+
+
+
 	} else {
 		query = bson.M{"$or": []interface{}{
 			bson.M{"isPrivate": false},

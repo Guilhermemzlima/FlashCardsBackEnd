@@ -62,17 +62,20 @@ func (a DeckRepository) Persist(deck *deck.Deck) (*deck.Deck, error) {
 func (a DeckRepository) FindById(userId string, id *primitive.ObjectID, private bool) (deckReturn *deck.Deck, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	privateResult := bson.M{}
-	if !private {
-		privateResult = bson.M{"isPrivate": false}
+	var query bson.M
+	if private {
+		query = bson.M{"_id": id, "$or": []interface{}{
+			bson.M{"userId": userId},
+		}}
+	} else {
+		query = bson.M{"_id": id, "$or": []interface{}{
+			bson.M{"isPrivate": false},
+			bson.M{"userId": userId},
+		}}
 	}
 
 	col := a.client.Database(a.database).Collection(a.deckCollection)
 
-	query := bson.M{"_id": id, "$or": []interface{}{
-		privateResult,
-		bson.M{"userId": userId},
-	}}
 	result := col.FindOne(ctx, query)
 	if result.Err() != nil {
 		log.Logger.Warn("Find deckReturn by id has failed", "Error", result.Err())

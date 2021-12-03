@@ -235,7 +235,7 @@ func (uc DeckUseCase) FindBySearch(filter, userId string, pagination *filter.Pag
 
 func (uc DeckUseCase) AddCounterPlayDeck(id, userId string, savedDeck *deck.Deck) (deckReturn *deck.Deck, err error) {
 	savedDeck.PlayCount = savedDeck.PlayCount + 1
-	deckReturn, err = uc.Update(id, userId, false, savedDeck)
+	deckReturn, err = uc.Update(id, savedDeck.UserId, false, savedDeck)
 	if err != nil {
 		log.Logger.Errorw("update error", "error", err.Error())
 		return nil, errors.WrapWithMessage(errors.ErrInternalServer, err.Error())
