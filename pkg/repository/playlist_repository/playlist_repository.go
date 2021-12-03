@@ -96,15 +96,18 @@ func (a PlaylistRepository) FindByUserId(userId string, pagination *filter.Pagin
 	findOptions.SetLimit(pagination.Limit).SetSkip(pagination.Skip)
 	findOptions.SetSort(bson.D{{"createdAt", mongodb.ASC}})
 
-	privateResult := bson.M{}
+	var query  bson.M
 	if !private {
-		privateResult = bson.M{"isPrivate": false}
+		query = bson.M{"$or": []interface{}{
+			bson.M{"isPrivate": false},
+			bson.M{"userId": userId},
+		}}
+	} else {
+		query = bson.M{
+			"userId": userId,
+		}
 	}
 
-	query := bson.M{"$or": []interface{}{
-		privateResult,
-		bson.M{"userId": userId},
-	}}
 	result, err := col.Find(ctx, query, findOptions)
 
 	if err != nil {

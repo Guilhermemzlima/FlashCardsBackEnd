@@ -131,10 +131,10 @@ func (a DeckRepository) FindByUserId(filter, userId string, pagination *filter.P
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	var mongodbCount int64
-	if order == "ASC"{
+	if order == "ASC" {
 		mongodbCount = mongodb.ASC
 	}
-	if order == "DESC"{
+	if order == "DESC" {
 		mongodbCount = mongodb.DESC
 	}
 
@@ -143,18 +143,22 @@ func (a DeckRepository) FindByUserId(filter, userId string, pagination *filter.P
 	findOptions.SetLimit(pagination.Limit).SetSkip(pagination.Skip)
 	findOptions.SetSort(bson.D{{orderBy, mongodbCount}})
 
-	privateResult := bson.M{}
+	var query bson.M
 	if !private {
-		privateResult = bson.M{"isPrivate": false}
+		query = bson.M{"name": bson.M{"$regex": primitive.Regex{
+			Pattern: ".*" + filter + ".*",
+			Options: "i",
+		}}, "$or": []interface{}{
+			bson.M{"isPrivate": false},
+			bson.M{"userId": userId},
+		}}
+	} else {
+		query = bson.M{"name": bson.M{"$regex": primitive.Regex{
+			Pattern: ".*" + filter + ".*",
+			Options: "i",
+		}}, "userId": userId,
+		}
 	}
-
-	query := bson.M{"name": bson.M{"$regex": primitive.Regex{
-		Pattern: ".*" + filter + ".*",
-		Options: "i",
-	}}, "$or": []interface{}{
-		privateResult,
-		bson.M{"userId": userId},
-	}}
 
 	result, err := col.Find(ctx, query, findOptions)
 	if err != nil {
