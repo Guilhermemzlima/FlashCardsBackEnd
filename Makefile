@@ -1,4 +1,4 @@
-all: build run
+all: build image image-push
 
 setup:
 	go mod vendor
@@ -17,3 +17,8 @@ build:
 
 image:
 	docker build -t guilhermemzlima/flashcardsbackend:latest .
+
+
+image-push:
+	docker push guilhermemzlima/flashcardsbackend:latest
+
