@@ -144,7 +144,13 @@ func (a DeckRepository) FindByUserId(filter, userId string, pagination *filter.P
 	findOptions.SetSort(bson.D{{orderBy, mongodbCount}})
 
 	var query bson.M
-	if !private {
+	if private {
+		query = bson.M{"name": bson.M{"$regex": primitive.Regex{
+			Pattern: ".*" + filter + ".*",
+			Options: "i",
+		}}, "userId": userId,
+		}
+	} else {
 		query = bson.M{"name": bson.M{"$regex": primitive.Regex{
 			Pattern: ".*" + filter + ".*",
 			Options: "i",
@@ -152,12 +158,6 @@ func (a DeckRepository) FindByUserId(filter, userId string, pagination *filter.P
 			bson.M{"isPrivate": false},
 			bson.M{"userId": userId},
 		}}
-	} else {
-		query = bson.M{"name": bson.M{"$regex": primitive.Regex{
-			Pattern: ".*" + filter + ".*",
-			Options: "i",
-		}}, "userId": userId,
-		}
 	}
 
 	result, err := col.Find(ctx, query, findOptions)
